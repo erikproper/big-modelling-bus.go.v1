@@ -1,7 +1,8 @@
 /*
  *
  * Package: mbconnect
- * Module:  modelling_bus_connector
+ * Layer:   1
+ * Module:  protocol_connectors
  *
  * This package defines the TModellingBusConnector type which takes are of connecting
  * to the FTP server as well as the MQTT broker.
@@ -20,7 +21,6 @@ import (
 	"fmt"
 	"github.com/eclipse/paho.mqtt.golang"
 	"github.com/secsy/goftp"
-	"gopkg.in/ini.v1"
 	"os"
 	"path/filepath"
 	"strings"
@@ -207,7 +207,7 @@ func (b *TModellingBusConnector) connLostHandler(c mqtt.Client, err error) {
 	panic(fmt.Sprintf("PANIC; MQTT connection lost, reason: %v\n", err))
 }
 
-func (b *TModellingBusConnector) ConnectToMQTT() {
+func (b *TModellingBusConnector) connectToMQTT() {
 	opts := mqtt.NewClientOptions()
 	opts.AddBroker("tcp://" + b.mqttBroker + ":" + b.mqttPort)
 	opts.SetClientID("mqtt-client-" + b.AgentID)
@@ -414,27 +414,7 @@ func EventPayloadAllowed (payload []byte) bool {
 func (b *TModellingBusConnector) Initialise(config string, errorReporter TErrorReporter) {
 	b.errorReporter = errorReporter
 
-	cfg, err := ini.Load(config)
-	if err != nil {
-		b.errorReporter("Failed to read config file:", err)
-		return
-	}
-
-	b.experimentID = cfg.Section("").Key("experiment").String()
-	b.AgentID = cfg.Section("").Key("agent").String()
-	b.ftpLocalWorkFolder = cfg.Section("").Key("work").String()
-
-	b.ftpPort = cfg.Section("ftp").Key("port").String()
-	b.ftpUser = cfg.Section("ftp").Key("user").String()
-	b.ftpServer = cfg.Section("ftp").Key("server").String()
-	b.ftpPassword = cfg.Section("ftp").Key("password").String()
-	b.ftpPathPrefix = cfg.Section("ftp").Key("prefix").String()
-
-	b.mqttPort = cfg.Section("mqtt").Key("port").String()
-	b.mqttUser = cfg.Section("mqtt").Key("user").String()
-	b.mqttBroker = cfg.Section("mqtt").Key("broker").String()
-	b.mqttPassword = cfg.Section("mqtt").Key("password").String()
-	b.mqttPathPrefix = cfg.Section("mqtt").Key("prefix").String()
+	b.readConfig(config)
 
 	topicBase := modellingBusVersion + "/" + b.experimentID
 	b.mqttGenericRoot = b.mqttPathPrefix + "/" + topicBase
@@ -444,12 +424,12 @@ func (b *TModellingBusConnector) Initialise(config string, errorReporter TErrorR
 	b.lastTimeTimestamp = ""
 	b.timestampCounter = 0
 
-	b.ConnectToMQTT()
+	b.connectToMQTT()
 }
 
 func CreateModellingBusConnector(config string, errorReporter TErrorReporter) TModellingBusConnector {
-	ModellingBusConnector := TModellingBusConnector{}
-	ModellingBusConnector.Initialise(config, errorReporter)
+	modellingBusConnector := TModellingBusConnector{}
+	modellingBusConnector.Initialise(config, errorReporter)
 
-	return ModellingBusConnector
+	return modellingBusConnector
 }
