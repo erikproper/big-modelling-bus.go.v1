@@ -1,4 +1,37 @@
-[ ] Refactor
+[ ] ModellingBusConnector.DeleteRawArtefact("context", "golang", "main.go")
+==> Delete files ....
+==> Events and files
+==> But files have a timestamp on the FTP server ...
+==> So, still deletion of entire folder, but with extension possibly.
+
+func (b *TModellingBusConnector) cleanFTPPath(topicPath string) {
+	// Connect to the FTP server
+	client, err := b.ftpConnect()
+	if err != nil {
+		b.errorReporter("Couldn't open an FTP connection:", err)
+		return
+	}
+
+	fileInfos, _ := client.ReadDir(b.ftpAgentRoot + "/" + topicPath)
+
+	// Remove older artefacts from the FTP server within the topicPath folder
+	for _, fileInfo := range fileInfos {
+			err = client.Delete(fileInfo.Name())
+			if err != nil {
+				b.errorReporter("Couldn't delete artefact:", err)
+				return
+			}
+		} else {
+			filePath := fileInfo.Name()
+			fileName := strings.TrimSuffix(filepath.Base(filePath), filepath.Ext(filePath))
+
+			if fileName < timestamp {
+				client.Delete(filePath)
+			}
+		}
+	}
+}
+
 
 [ ] Principles
 - Separation of concerns across layers
@@ -10,20 +43,6 @@
     - TRepository (FTP)
     - TEventBus (MQTT)
     
-[ ] RAW vs Structured Artefacts and not simply "models" vs "files"
-    Posting types:
-
-
-    MQTT+FTP:
-    - BBB/AAA/artefacts/file/FFF
-    - BBB/AAA/artefacts/json/FFF/VVV/{s,u,c}
-
-    - BBB/AAA/observations/file/FFF
-    - BBB/AAA/observations/json/FFF/VVV/{s,u,c}
-
-    MQTT:
-    - BBB/AAA/observations/basic/FFF/VVV/{s,u,c}
-
 [ ] CDM should have its own ID generator. Separation of concerns!
 
 [ ] Keep alive at MQTT level. Laptop seems to drop the connection. 

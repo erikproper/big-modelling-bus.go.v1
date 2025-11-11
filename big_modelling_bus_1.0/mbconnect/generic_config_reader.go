@@ -20,38 +20,34 @@ import (
 
 type (
 	TConfigData struct {
-		errorReporter TErrorReporter
-		iniFile       *ini.File
+		configFile *ini.File
 	}
 
 	TConfigValue struct {
-		errorReporter TErrorReporter
-		configKey     *ini.Key
+		configKey *ini.Key
 	}
 )
 
-func LoadConfig(filePath string, errorReporter TErrorReporter) (*TConfigData, bool) {
+func LoadConfig(filePath string, reporter *TReporter) *TConfigData {
 	var (
 		err        error
 		configData TConfigData
 	)
 
-	configData.errorReporter = errorReporter
-	configData.iniFile, err = ini.Load(filePath)
+	reporter.Progress("Using config: %s", filePath)
+	configData.configFile, err = ini.Load(filePath)
 
 	if err != nil {
-		configData.errorReporter("Failed to read config file:", err)
-		configData.iniFile = nil
-		return &configData, false
+		reporter.Panic("Failed to read config file. %s", err)
 	}
 
-	return &configData, true
+	return &configData
 }
 
 func (c *TConfigData) GetValue(section, key string) *TConfigValue {
 	var configValue TConfigValue
 
-	configValue.configKey = c.iniFile.Section(section).Key(key)
+	configValue.configKey = c.configFile.Section(section).Key(key)
 
 	return &configValue
 }
@@ -70,9 +66,9 @@ func (v *TConfigValue) String() string {
 }
 
 func (v *TConfigValue) IntWithDefault(defaultInt int) int {
-	i, err := v.configKey.Int()
+	keyInt, err := v.configKey.Int()
 	if err == nil {
-		return i
+		return keyInt
 	} else {
 		return defaultInt
 	}
@@ -80,13 +76,4 @@ func (v *TConfigValue) IntWithDefault(defaultInt int) int {
 
 func (v *TConfigValue) Int() int {
 	return v.IntWithDefault(0)
-}
-
-func IntWithDefault(key *ini.Key, defaultInt int) int {
-	keyInt, err := key.Int()
-	if err == nil {
-		return keyInt
-	} else {
-		return defaultInt
-	}
 }

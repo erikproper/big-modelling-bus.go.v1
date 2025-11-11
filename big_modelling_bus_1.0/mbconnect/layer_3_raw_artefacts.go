@@ -36,3 +36,12 @@ func (b *TModellingBusConnector) PostRawArtefact(context, format, localFilePath 
 
 	b.postFile(topicPath, timestamp, filepath.Ext(localFilePath), localFilePath, timestamp)
 }
+
+func (b *TModellingBusConnector) DeleteRawArtefact(context, format, localFilePath string) {
+	topicPath := rawArtefactsFilePathElement +
+		"/" + context +
+		"/" + format
+	timestamp := GetTimestamp() ///// ???
+
+	b.deleteFile(topicPath, timestamp, filepath.Ext(localFilePath))
+}

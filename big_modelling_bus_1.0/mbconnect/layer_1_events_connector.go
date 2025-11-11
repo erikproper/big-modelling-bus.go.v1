@@ -15,7 +15,6 @@
 package mbconnect
 
 import (
-	"fmt"
 	"github.com/eclipse/paho.mqtt.golang"
 	"time"
 )
@@ -36,12 +35,12 @@ type (
 
 		mqttClient mqtt.Client
 
-		errorReporter TErrorReporter
+		reporter *TReporter
 	}
 )
 
 func (e *tModellingBusEventsConnector) connectionLostHandler(c mqtt.Client, err error) {
-	panic(fmt.Sprintf("PANIC; MQTT connection lost, reason: %v\n", err))
+	e.reporter.Panic("MQTT connection lost. %s", err)
 }
 
 func (e *tModellingBusEventsConnector) connectToMQTT() {
@@ -53,8 +52,7 @@ func (e *tModellingBusEventsConnector) connectToMQTT() {
 	opts.SetConnectionLostHandler(e.connectionLostHandler)
 
 	for connected := false; !connected; {
-		// Two log channels needed. One for errors, and one for normal progress.
-		fmt.Println("Trying to connect to the MQTT broker")
+		e.reporter.Progress("Trying to connect to the MQTT broker.")
 
 		e.mqttClient = mqtt.NewClient(opts)
 		token := e.mqttClient.Connect()
@@ -62,7 +60,7 @@ func (e *tModellingBusEventsConnector) connectToMQTT() {
 
 		err := token.Error()
 		if err != nil {
-			e.errorReporter("Error connecting to the MQTT broker:", err)
+			e.reporter.Error("Error connecting to the MQTT broker. %s", err)
 
 			time.Sleep(5)
 		} else {
@@ -70,7 +68,7 @@ func (e *tModellingBusEventsConnector) connectToMQTT() {
 		}
 	}
 
-	fmt.Println("Connected to the MQTT broker")
+	e.reporter.Progress("Connected to the MQTT broker.")
 }
 
 func (e *tModellingBusEventsConnector) listenForEvents(AgentID, topicPath string, eventHandler func([]byte)) {
@@ -87,14 +85,18 @@ func (e *tModellingBusEventsConnector) postEvent(topicPath string, message []byt
 	token.Wait()
 }
 
+func (e *tModellingBusEventsConnector) deleteEvent(topicPath string) {
+	e.postEvent(topicPath, []byte{})
+}
+
 func (e *tModellingBusEventsConnector) eventPayloadAllowed(payload []byte) bool {
 	return len(payload) <= e.mqttMaxMessageSize
 }
 
-func createModellingBusEventsConnector(topicBase, agentID string, configData *TConfigData, errorReporter TErrorReporter) *tModellingBusEventsConnector {
+func createModellingBusEventsConnector(topicBase, agentID string, configData *TConfigData, reporter *TReporter) *tModellingBusEventsConnector {
 	e := tModellingBusEventsConnector{}
 
-	e.errorReporter = errorReporter
+	e.reporter = reporter
 
 	// Get data from the config file
 	e.agentID = agentID

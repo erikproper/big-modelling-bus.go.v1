@@ -16,10 +16,6 @@ const (
 	defaultIni         = "mobile.ini"
 )
 
-func reportError(message string, err error) {
-	fmt.Println(message+":", err)
-}
-
 type TCDMModelLaTeXWriter struct {
 	CurrentModel,
 	UpdatedModel,
@@ -34,7 +30,7 @@ type TCDMModelLaTeXWriter struct {
 
 	LaTeXfile *os.File
 
-	errorReporter mbconnect.TErrorReporter
+	reporter *mbconnect.TReporter
 }
 
 /*
@@ -261,13 +257,14 @@ func (l *TCDMModelLaTeXWriter) CreatePDF() {
 	cmd.Run()
 }
 
-func (l *TCDMModelLaTeXWriter) Initialise(config string, errorReporter mbconnect.TErrorReporter) {
-	l.errorReporter = errorReporter
+// //// UPDATE
+func (l *TCDMModelLaTeXWriter) Initialise(config string, reporter *mbconnect.TReporter) {
+	l.reporter = reporter
 
 	cfg, err := ini.Load(config)
 	if err != nil {
-		l.errorReporter("Failed to read config file:", err)
-		return
+		l.reporter.Error("Failed to read config file:", err)
+		panic("")
 	}
 
 	l.workFolder = cfg.Section("").Key("work").String()
@@ -278,16 +275,16 @@ func (l *TCDMModelLaTeXWriter) Initialise(config string, errorReporter mbconnect
 	l.ConsideredModel = cdm.CreateCDMModel()
 }
 
-func CreateCDMLaTeXWriter(config string, errorReporter mbconnect.TErrorReporter) TCDMModelLaTeXWriter {
+func CreateCDMLaTeXWriter(config string, reporter *mbconnect.TReporter) TCDMModelLaTeXWriter {
 	CDMModelLaTeXWriter := TCDMModelLaTeXWriter{}
-	CDMModelLaTeXWriter.Initialise(config, errorReporter)
+	CDMModelLaTeXWriter.Initialise(config, reporter)
 
 	return CDMModelLaTeXWriter
 }
 
-func (l *TCDMModelLaTeXWriter) ListenToModellingBus(ModellingBusModelListener mbconnect.TModellingBusArtefactConnector, agentId, modelID string) {
-	ModellingBusModelListener.ListenToStatePostings(agentId, modelID, func() {
-		fmt.Println("Received state")
+func (l *TCDMModelLaTeXWriter) ListenForModellingBus(ModellingBusModelListener mbconnect.TModellingBusArtefactConnector, agentId, modelID string) {
+	ModellingBusModelListener.ListenForStatePostings(agentId, modelID, func() {
+		l.reporter.Progress("Received state.")
 		l.CurrentModel.GetStateFromBus(ModellingBusModelListener)
 		l.UpdatedModel.GetUpdatedFromBus(ModellingBusModelListener)
 		l.ConsideredModel.GetConsideredFromBus(ModellingBusModelListener)
@@ -295,35 +292,45 @@ func (l *TCDMModelLaTeXWriter) ListenToModellingBus(ModellingBusModelListener mb
 		l.CreatePDF()
 	})
 
-	ModellingBusModelListener.ListenToUpdatePostings(agentId, modelID, func() {
-		fmt.Println("Received update")
+	ModellingBusModelListener.ListenForUpdatePostings(agentId, modelID, func() {
+		l.reporter.Progress("Received update.")
 		l.UpdatedModel.GetUpdatedFromBus(ModellingBusModelListener)
 		l.ConsideredModel.GetConsideredFromBus(ModellingBusModelListener)
 		l.WriteModelToLaTeX()
 		l.CreatePDF()
 	})
 
-	ModellingBusModelListener.ListenToConsideringPostings(agentId, modelID, func() {
-		fmt.Println("Received considered")
+	ModellingBusModelListener.ListenForConsideringPostings(agentId, modelID, func() {
+		l.reporter.Progress("Received considered.")
 		l.ConsideredModel.GetConsideredFromBus(ModellingBusModelListener)
 		l.WriteModelToLaTeX()
 		l.CreatePDF()
 	})
 }
 
+func ReportProgress(message string) {
+	fmt.Println("PROGRESS:", message)
+}
+
+func ReportError(message string) {
+	fmt.Println("ERROR:", message)
+}
+
 func main() {
+	reporter := mbconnect.CreateReporter(ReportError, ReportProgress)
+
 	config := defaultIni
 	if len(os.Args) > 1 {
 		config = os.Args[1]
 	}
 
-	fmt.Println("Using config:", config)
+	configData := mbconnect.LoadConfig(config, reporter)
 
-	ModellingBusConnector := mbconnect.CreateModellingBusConnector(config, reportError)
+	ModellingBusConnector := mbconnect.CreateModellingBusConnector(configData, reporter)
 	ModellingBusModelListener := cdm.CreateCDMListener(ModellingBusConnector)
 
-	CDMLaTeXWriter := CreateCDMLaTeXWriter(config, reportError)
-	CDMLaTeXWriter.ListenToModellingBus(ModellingBusModelListener, "cdm-tester", "0001")
+	CDMLaTeXWriter := CreateCDMLaTeXWriter(config, reporter)
+	CDMLaTeXWriter.ListenForModellingBus(ModellingBusModelListener, "cdm-tester", "0001")
 
 	for true {
 		time.Sleep(1)

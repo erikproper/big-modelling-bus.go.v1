@@ -8,9 +8,9 @@ import (
 	"os"
 )
 
-func reportError(message string, err error) {
-	fmt.Println(message+":", err)
-}
+const (
+	defaultIni = "mobile.ini"
+)
 
 func Pause() {
 	fmt.Println("Press any key")
@@ -18,17 +18,28 @@ func Pause() {
 	input.Scan()
 }
 
+func ReportProgress(message string) {
+	fmt.Println("PROGRESS:", message)
+}
+
+func ReportError(message string) {
+	fmt.Println("ERROR:", message)
+}
+
 func main() {
-	config := "mobile.ini"
+	reporter := mbconnect.CreateReporter(ReportError, ReportProgress)
+
+	config := defaultIni
 	if len(os.Args) > 1 {
 		config = os.Args[1]
 	}
 
-	fmt.Println("Using config:", config)
+	configData := mbconnect.LoadConfig(config, reporter)
 
-	ModellingBusConnector := mbconnect.CreateModellingBusConnector(config, reportError)
+	ModellingBusConnector := mbconnect.CreateModellingBusConnector(configData, reporter)
 
 	ModellingBusConnector.PostRawArtefact("context", "golang", "main.go")
+	//	ModellingBusConnector.DeleteRawArtefact("context", "golang", "main.go")
 
 	// Note that the 0001 is for local use. No issue to e.g. make this into 0001/02 to indicate version numbers
 	Model := cdm.CreateCDMPoster(ModellingBusConnector, "0001")

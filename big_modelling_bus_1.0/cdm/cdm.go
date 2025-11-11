@@ -20,19 +20,27 @@ import (
 
 const (
 	ModelJSONVersion = "cdm-1.0-1.0"
+	MetaModelVersion = "cdm-1.0"
 )
 
 type (
+	TCDMJSONModel struct {
+		ModelName    string `json:"model name"`
+		ElementTypes map[string]string
+	}
+
 	TRelationReading struct {
 		InvolvementTypes []string `json:"involvement types"`
 		ReadingElements  []string `json:"reading elements"`
 	}
 
 	TCDMModel struct {
-		ModelName                    string                                   `json:"model name"`
-		ModellingBusArtefactReporter mbconnect.TModellingBusArtefactConnector `json:"-"`
-		TypeIDCount                  int                                      `json:"-"`
-		InstanceIDCount              int                                      `json:"-"`
+		ModelName                  string                                   `json:"model name"`
+		ModellingBusArtefactPoster mbconnect.TModellingBusArtefactConnector `json:"-"`
+		ModellingBusModelPoster mbconnect.TModellingBusArtefactConnector `json:"-"`
+		TypeIDCount                int                                      `json:"-"`
+		InstanceIDCount            int                                      `json:"-"`
+		ModellingBusModel          TCDMJSONModel                            `json:"-"`
 
 		// For types
 		TypeName map[string]string `json:"type names"`
@@ -78,7 +86,7 @@ func (m *TCDMModel) Clean() {
 
 func (m *TCDMModel) NewElementID() string {
 	// Check should be at the busconnector level ...
-	return m.ModellingBusArtefactReporter.ModellingBusConnector.GetNewID()
+	return m.ModellingBusArtefactPoster.ModellingBusConnector.GetNewID()
 }
 
 func (m *TCDMModel) SetModelName(name string) {
@@ -154,10 +162,6 @@ func (m *TCDMModel) AddRelationTypeReading(relationType string, stringsAndInvolv
  *
  */
 
-func (m *TCDMModel) Initialise() {
-	m.Clean()
-}
-
 func CreateCDMModel() TCDMModel {
 	CDMModel := TCDMModel{}
 	CDMModel.Clean()
@@ -174,27 +178,25 @@ func CreateCDMModel() TCDMModel {
 func CreateCDMPoster(ModellingBusConnector mbconnect.TModellingBusConnector, modelID string) TCDMModel {
 	CDMPosterModel := CreateCDMModel()
 
-	CDMPosterModel.ModellingBusArtefactReporter = mbconnect.CreateModellingBusModelConnector(ModellingBusConnector, ModelJSONVersion)
-	CDMPosterModel.ModellingBusArtefactReporter.PrepareForPosting(modelID)
+	CDMPosterModel.ModellingBusArtefactPoster = mbconnect.CreateModellingBusArtefactConnector(ModellingBusConnector, ModelJSONVersion)
+	CDMPosterModel.ModellingBusArtefactPoster.PrepareForPosting(modelID)
 
 	return CDMPosterModel
 }
 
-func (m *TCDMModel) ConnectoToBus(ModellingBusConnector mbconnect.TModellingBusConnector, modelID string) {
-	m.ModellingBusArtefactReporter.Initialise(ModellingBusConnector, ModelJSONVersion)
-	m.ModellingBusArtefactReporter.PrepareForPosting(modelID)
-}
-
 func (m *TCDMModel) PostState() {
-	m.ModellingBusArtefactReporter.PostState(json.Marshal(m))
+	m.ModellingBusArtefactPoster.PostState(json.Marshal(m))
+
+//	m.ModellingBusModel = TCDMJSONModel{}
+//	m.ModellingBusModel.ModelName
 }
 
 func (m *TCDMModel) PostUpdate() {
-	m.ModellingBusArtefactReporter.PostUpdate(json.Marshal(m))
+	m.ModellingBusArtefactPoster.PostUpdate(json.Marshal(m))
 }
 
 func (m *TCDMModel) PostConsidering() {
-	m.ModellingBusArtefactReporter.PostConsidering(json.Marshal(m))
+	m.ModellingBusArtefactPoster.PostConsidering(json.Marshal(m))
 }
 
 /*
@@ -204,7 +206,7 @@ func (m *TCDMModel) PostConsidering() {
  */
 
 func CreateCDMListener(ModellingBusConnector mbconnect.TModellingBusConnector) mbconnect.TModellingBusArtefactConnector {
-	ModellingBusCDMModelListener := mbconnect.CreateModellingBusModelConnector(ModellingBusConnector, ModelJSONVersion)
+	ModellingBusCDMModelListener := mbconnect.CreateModellingBusArtefactConnector(ModellingBusConnector, ModelJSONVersion)
 
 	return ModellingBusCDMModelListener
 }
