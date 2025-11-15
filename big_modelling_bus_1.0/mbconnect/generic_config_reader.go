@@ -65,6 +65,19 @@ func (v *TConfigValue) String() string {
 	return v.StringWithDefault("")
 }
 
+func (v *TConfigValue) BoolWithDefault(defaultBool bool) bool {
+	keyBool, err := v.configKey.Bool()
+	if err == nil {
+		return keyBool
+	} else {
+		return defaultBool
+	}
+}
+
+func (v *TConfigValue) Bool() bool {
+	return v.BoolWithDefault(false)
+}
+
 func (v *TConfigValue) IntWithDefault(defaultInt int) int {
 	keyInt, err := v.configKey.Int()
 	if err == nil {

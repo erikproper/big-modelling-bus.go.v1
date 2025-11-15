@@ -1,4 +1,5 @@
 [ ] CDM layaer cleaning
+[ ] CDM should have its own ID generator. Separation of concerns!
 
 [ ] ModellingBusConnector.DeleteRawArtefact("context", "golang", "main.go")
 ==> Delete files ....
@@ -34,7 +35,9 @@ func (b *TModellingBusConnector) cleanFTPPath(topicPath string) {
 	}
 }
 
-[ ] Clean listener
+[ ] Clean FTP if wanted
+
+[ ] Clean listener code
 
 [ ] Principles
 - Separation of concerns across layers
@@ -46,7 +49,6 @@ func (b *TModellingBusConnector) cleanFTPPath(topicPath string) {
     - TRepository (FTP)
     - TEventBus (MQTT)
     
-[ ] CDM should have its own ID generator. Separation of concerns!
 
 [ ] https://mermaid.live/
 

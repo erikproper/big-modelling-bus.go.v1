@@ -29,6 +29,7 @@ type (
 		ftpServer,
 		ftpPassword,
 		ftpLocalWorkDirectory string
+		ftpSingleServerMode bool
 
 		createdPaths map[string]bool
 
@@ -37,8 +38,8 @@ type (
 )
 
 type tRepositoryEvent struct {
-//	Server        string `json:"server,omitempty"`
-//	Port          string `json:"port,omitempty"`
+	Server        string `json:"server,omitempty"`
+	Port          string `json:"port,omitempty"`
 	FilePath      string `json:"file path,omitempty"`
 	FileExtension string `json:"file extension,omitempty"`
 }
@@ -109,8 +110,10 @@ func (r *tModellingBusRepositoryConnector) addFile(topicPath, fileName, fileExte
 	}
 	client.Close()
 
-//	repositoryEvent.Server = r.ftpServer
-//	repositoryEvent.Port = r.ftpPort
+	if ! r.ftpSingleServerMode {
+		repositoryEvent.Server = r.ftpServer
+		repositoryEvent.Port = r.ftpPort
+	}
 	repositoryEvent.FilePath = r.ftpAgentRoot + "/" + topicPath + "/" + fileName
 	repositoryEvent.FileExtension = fileExtension
 
@@ -150,17 +153,26 @@ func (r *tModellingBusRepositoryConnector) addJSONAsFile(topicPath string, json 
 
 func (r *tModellingBusRepositoryConnector) getFile(repositoryEvent tRepositoryEvent, timestamp string) string {
 	localFileName := r.ftpLocalWorkDirectory + "/" + timestamp + repositoryEvent.FileExtension
-//	serverConnection := repositoryEvent.Server + ":" + repositoryEvent.Port
-	serverConnection := r.ftpServer+ ":" + r.ftpPort
 
-	client, err := goftp.DialConfig(goftp.Config{}, serverConnection)
+	config := goftp.Config{}
+	serverConnection := ""
+
+	if r.ftpSingleServerMode {
+		serverConnection = r.ftpServer + ":" + r.ftpPort
+
+		config.User = r.ftpUser
+		config.Password = r.ftpPassword
+	} else {
+		serverConnection = repositoryEvent.Server + ":" + repositoryEvent.Port
+	}
+	
+	client, err := goftp.DialConfig(config, serverConnection)
 	if err != nil {
 		r.reporter.Error("Something went wrong connecting to the FTP server", err)
 		return ""
 	}
 
 	// Download a File to local storage
-	// ====> CHECK need for OS (Dos, Linux, ...) independent "/"
 	File, err := os.Create(localFileName)
 	if err != nil {
 		r.reporter.Error("Something went wrong creating local file", err)
@@ -187,6 +199,7 @@ func createModellingBusRepositoryConnector(topicBase, agentID string, configData
 	r.ftpUser = configData.GetValue("ftp", "user").String()
 	r.ftpServer = configData.GetValue("ftp", "server").String()
 	r.ftpPassword = configData.GetValue("ftp", "password").String()
+	r.ftpSingleServerMode = configData.GetValue("ftp", "single_server_mode").BoolWithDefault(false)
 	r.ftpAgentRoot = configData.GetValue("ftp", "prefix").String() + "/" + topicBase + "/" + agentID
 
 	r.createdPaths = map[string]bool{}

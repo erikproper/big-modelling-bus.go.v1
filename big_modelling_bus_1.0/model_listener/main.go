@@ -160,7 +160,7 @@ func (l *TCDMModelLaTeXWriter) RenderModelRelationTypeReading(m cdm.TCDMModel, r
 		if involvementPosition == 0 {
 			readingString += m.ReadingDefinition[reading].ReadingElements[involvementPosition]
 		}
-		readingString += " " + 
+		readingString += " " +
 			m.TypeName[m.BaseTypeOfInvolvementType[involvementType]] +
 			" $\\{$ " + m.TypeName[involvementType] + " $\\}$ " +
 			m.ReadingDefinition[reading].ReadingElements[involvementPosition+1]
