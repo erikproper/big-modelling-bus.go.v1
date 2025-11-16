@@ -46,16 +46,9 @@ func main() {
 	// Note that the 0001 is for local use. No issue to e.g. make this into 0001/02 to indicate version numbers
 	CDMModellingBusPoster := cdm.CreateCDMPoster(ModellingBusConnector, "0001")
 
-	// Use "EventHandler" for incomming work. Such as ... also the low level cleamup request
 	//
-	// Put parameters in a config struct
-	// But then use "github.com/go-ini/ini"
+	// NEED to add cleaning/delation primitives.
 	//
-	// A "flush" operator for clients
-
-	// log for errors
-
-	///
 	// CDMModellingBusPoster.ModelsBus.ModellingBusConnector.CleanFTPPath("models/0001/cdm-1.0-1.0/state", "2025-10-19-21-04-14-986464")
 	//	// Remove older versions of the JSON file from the FTP server
 	//	fileInfos, err := client.ReadDir(b.ModellingBusConnectorFTPPath)
@@ -67,7 +60,7 @@ func main() {
 	//			}
 	//		}
 	//	}
-	///
+	//
 
 	CDMModellingBusPoster.SetModelName("Empty university")
 
