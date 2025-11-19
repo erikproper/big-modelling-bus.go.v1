@@ -19,6 +19,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"fmt"
 )
 
 type (
@@ -158,13 +159,17 @@ func (r *tModellingBusRepositoryConnector) getFile(repositoryEvent tRepositoryEv
 	serverConnection := ""
 
 	if r.ftpSingleServerMode {
+		fmt.Println("SSM")
 		serverConnection = r.ftpServer + ":" + r.ftpPort
 
 		config.User = r.ftpUser
 		config.Password = r.ftpPassword
 	} else {
 		serverConnection = repositoryEvent.Server + ":" + repositoryEvent.Port
+		fmt.Println("NOTSSM")
 	}
+			fmt.Println(serverConnection)
+
 	
 	client, err := goftp.DialConfig(config, serverConnection)
 	if err != nil {
