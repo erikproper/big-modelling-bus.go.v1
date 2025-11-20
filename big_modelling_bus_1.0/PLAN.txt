@@ -1,5 +1,5 @@
 [ ] CDM layaer cleaning
-[ ] CDM should have its own ID generator. Separation of concerns!
+[ ] CDM should have its own ID generator. Separation of concerns! Wel ?? WHY NOT use smae generatot?
 
 [ ] ModellingBusConnector.DeleteRawArtefact("context", "golang", "main.go")
 ==> Delete files ....

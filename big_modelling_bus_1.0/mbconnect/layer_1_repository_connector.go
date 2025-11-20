@@ -23,13 +23,14 @@ import (
 
 type (
 	tModellingBusRepositoryConnector struct {
-		ftpPort,
-		ftpUser,
-		ftpAgentRoot,
-		ftpServer,
-		ftpPassword,
-		ftpLocalWorkDirectory string
-		ftpSingleServerMode bool
+		port,
+		user,
+		server,
+		password,
+		agentRoot,
+		localWorkDirectory string
+		activeTransfers,
+		singleServerMode bool
 
 		createdPaths map[string]bool
 
@@ -46,12 +47,12 @@ type tRepositoryEvent struct {
 
 func (r *tModellingBusRepositoryConnector) ftpConnect() (*goftp.Client, error) {
 	config := goftp.Config{}
-	config.User = r.ftpUser
-	config.Password = r.ftpPassword
-	config.ActiveTransfers = true
+	config.User = r.user
+	config.Password = r.password
+	config.ActiveTransfers = r.activeTransfers
 
-	ftpServerDefinition := r.ftpServer + ":" + r.ftpPort
-	client, err := goftp.DialConfig(config, ftpServerDefinition)
+	serverDefinition := r.server + ":" + r.port
+	client, err := goftp.DialConfig(config, serverDefinition)
 	if err != nil {
 		r.reporter.Error("Error connecting to the FTP server. %s", err)
 		return client, err
@@ -82,7 +83,7 @@ func (r *tModellingBusRepositoryConnector) mkRepositoryDirectoryPath(remoteDirec
 }
 
 func (r *tModellingBusRepositoryConnector) addFile(topicPath, fileName, fileExtension, localFilePath string) tRepositoryEvent {
-	remoteDirectoryPath := r.ftpAgentRoot + "/" + topicPath
+	remoteDirectoryPath := r.agentRoot + "/" + topicPath
 	remoteFilePath := remoteDirectoryPath + "/" + fileName + fileExtension
 
 	r.mkRepositoryDirectoryPath(remoteDirectoryPath)
@@ -111,11 +112,11 @@ func (r *tModellingBusRepositoryConnector) addFile(topicPath, fileName, fileExte
 	}
 	client.Close()
 
-	if ! r.ftpSingleServerMode {
-		repositoryEvent.Server = r.ftpServer
-		repositoryEvent.Port = r.ftpPort
+	if ! r.singleServerMode {
+		repositoryEvent.Server = r.server
+		repositoryEvent.Port = r.port
 	}
-	repositoryEvent.FilePath = r.ftpAgentRoot + "/" + topicPath + "/" + fileName
+	repositoryEvent.FilePath = r.agentRoot + "/" + topicPath + "/" + fileName
 	repositoryEvent.FileExtension = fileExtension
 
 	return repositoryEvent
@@ -129,7 +130,7 @@ func (r *tModellingBusRepositoryConnector) deleteFile(topicPath, fileName, fileE
 		return
 	}
 
-	err = client.Delete(r.ftpAgentRoot + "/" + topicPath + "/" + fileName + fileExtension)
+	err = client.Delete(r.agentRoot + "/" + topicPath + "/" + fileName + fileExtension)
 	if err != nil {
 		r.reporter.Error("Couldn't delete File. %s", err)
 		return
@@ -138,7 +139,7 @@ func (r *tModellingBusRepositoryConnector) deleteFile(topicPath, fileName, fileE
 
 func (r *tModellingBusRepositoryConnector) addJSONAsFile(topicPath string, json []byte) tRepositoryEvent {
 	// Define the temporary local file path
-	localFilePath := r.ftpLocalWorkDirectory + "/" + GetTimestamp() + jsonFileExtension
+	localFilePath := r.localWorkDirectory + "/" + GetTimestamp() + jsonFileExtension
 
 	// Create a temporary local file with the JSON record
 	err := os.WriteFile(filepath.FromSlash(localFilePath), json, 0644)
@@ -153,17 +154,17 @@ func (r *tModellingBusRepositoryConnector) addJSONAsFile(topicPath string, json 
 }
 
 func (r *tModellingBusRepositoryConnector) getFile(repositoryEvent tRepositoryEvent, timestamp string) string {
-	localFileName := r.ftpLocalWorkDirectory + "/" + timestamp + repositoryEvent.FileExtension
+	localFileName := r.localWorkDirectory + "/" + timestamp + repositoryEvent.FileExtension
 
 	config := goftp.Config{}
-	config.ActiveTransfers = true
+	config.ActiveTransfers = r.activeTransfers
 	serverConnection := ""
 
-	if r.ftpSingleServerMode {
-		serverConnection = r.ftpServer + ":" + r.ftpPort
+	if r.singleServerMode {
+		serverConnection = r.server + ":" + r.port
 
-		config.User = r.ftpUser
-		config.Password = r.ftpPassword
+		config.User = r.user
+		config.Password = r.password
 	} else {
 		serverConnection = repositoryEvent.Server + ":" + repositoryEvent.Port
 	}
@@ -196,13 +197,14 @@ func createModellingBusRepositoryConnector(topicBase, agentID string, configData
 	r.reporter = reporter
 
 	// Get data from the config file
-	r.ftpLocalWorkDirectory = configData.GetValue("", "work").String()
-	r.ftpPort = configData.GetValue("ftp", "port").String()
-	r.ftpUser = configData.GetValue("ftp", "user").String()
-	r.ftpServer = configData.GetValue("ftp", "server").String()
-	r.ftpPassword = configData.GetValue("ftp", "password").String()
-	r.ftpSingleServerMode = configData.GetValue("ftp", "single_server_mode").BoolWithDefault(false)
-	r.ftpAgentRoot = configData.GetValue("ftp", "prefix").String() + "/" + topicBase + "/" + agentID
+	r.localWorkDirectory = configData.GetValue("", "work").String()
+	r.port = configData.GetValue("ftp", "port").String()
+	r.user = configData.GetValue("ftp", "user").String()
+	r.server = configData.GetValue("ftp", "server").String()
+	r.password = configData.GetValue("ftp", "password").String()
+	r.singleServerMode = configData.GetValue("ftp", "single_server_mode").BoolWithDefault(false)
+	r.activeTransfers = configData.GetValue("ftp", "active_transfers").BoolWithDefault(false)
+	r.agentRoot = configData.GetValue("ftp", "prefix").String() + "/" + topicBase + "/" + agentID
 
 	r.createdPaths = map[string]bool{}
 

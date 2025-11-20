@@ -13,6 +13,7 @@ function MkIni {
     echo "port               = 21"
     echo "server             = \"$2\""
     echo "single_server_mode = $4"
+    echo "active_transfers   = $5"
     echo "prefix             = \"modelling_bus\""
     echo ""
     echo "[mqtt]"
@@ -25,16 +26,16 @@ function MkIni {
   ) > $1.ini
 }
 
-MkIni mobile                    localhost               tester true
-MkIni home                      frame.fritz.box         tester true
-MkIni tuwien                    dm-lab.big.tuwien.ac.at tester true
+MkIni mobile                    localhost               tester true false
+MkIni home                      frame.fritz.box         tester true false
+MkIni tuwien                    dm-lab.big.tuwien.ac.at tester true true
 
-MkIni ../model_listener/mobile  localhost               listener true
+MkIni ../model_listener/mobile  localhost               listener true false
 
-MkIni ../model_listener/home1   frame.fritz.box		home-1 true
-MkIni ../model_listener/home2   frame.fritz.box         home-2 true
-MkIni ../model_listener/home3   frame.fritz.box         home-3 true
+MkIni ../model_listener/home1   frame.fritz.box		home-1 true false
+MkIni ../model_listener/home2   frame.fritz.box         home-2 true false
+MkIni ../model_listener/home3   frame.fritz.box         home-3 true false
 
-MkIni ../model_listener/tuwien1 dm-lab.big.tuwien.ac.at tuwien-1 true
-MkIni ../model_listener/tuwien2 dm-lab.big.tuwien.ac.at tuwien-2 true
-MkIni ../model_listener/tuwien3 dm-lab.big.tuwien.ac.at tuwien-3 true
+MkIni ../model_listener/tuwien1 dm-lab.big.tuwien.ac.at tuwien-1 true true
+MkIni ../model_listener/tuwien2 dm-lab.big.tuwien.ac.at tuwien-2 true true
+MkIni ../model_listener/tuwien3 dm-lab.big.tuwien.ac.at tuwien-3 true true
