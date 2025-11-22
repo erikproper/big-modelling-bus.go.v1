@@ -57,6 +57,12 @@ func (b *TModellingBusConnector) deleteFile(topicPath, fileName, fileExtension s
 	b.modellingBusRepositoryConnector.deleteFile(topicPath, fileName, fileExtension)
 }
 
+func (b *TModellingBusConnector) deleteExperiment() {
+HERE
+//	b.modellingBusEventsConnector.deleteEvent(topicPath)
+//	b.modellingBusRepositoryConnector.deleteFile(topicPath, fileName, fileExtension)
+}
+
 func (b *TModellingBusConnector) listenForFilePostings(agentID, topicPath string, postingHandler func(string)) {
 	b.modellingBusEventsConnector.listenForEvents(agentID, topicPath, func(message []byte) {
 		event := tEvent{}

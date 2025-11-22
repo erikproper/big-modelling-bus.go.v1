@@ -1,42 +1,8 @@
-[ ] ModellingBusConnector.DeleteRawArtefact("context", "golang", "main.go")
-==> Delete files ....
-==> Events and files
-==> But files have a timestamp on the FTP server ...
-==> So, still deletion of entire folder, but with extension possibly.
-
-func (b *TModellingBusConnector) cleanFTPPath(topicPath string) {
-	// Connect to the FTP server
-	client, err := b.ftpConnect()
-	if err != nil {
-		b.errorReporter("Couldn't open an FTP connection:", err)
-		return
-	}
-
-	fileInfos, _ := client.ReadDir(b.ftpAgentRoot + "/" + topicPath)
-
-	// Remove older artefacts from the FTP server within the topicPath folder
-	for _, fileInfo := range fileInfos {
-			err = client.Delete(fileInfo.Name())
-			if err != nil {
-				b.errorReporter("Couldn't delete artefact:", err)
-				return
-			}
-		} else {
-			filePath := fileInfo.Name()
-			fileName := strings.TrimSuffix(filepath.Base(filePath), filepath.Ext(filePath))
-
-			if fileName < timestamp {
-				client.Delete(filePath)
-			}
-		}
-	}
-}
-
-[ ] Clean FTP if wanted
+[ ] Clean/delete experiment
 
 [ ] Clean listener code
 
-[ ] Document 
+[ ] Document
 
 [ ] Principles
 - Separation of concerns across layers

@@ -347,7 +347,7 @@ func main() {
 
 	// Note: One ModellingBusConnector can be used for different models of different kinds.
 	ModellingBusConnector := mbconnect.CreateModellingBusConnector(configData, reporter)
-	
+
 	CDMModellingBusListener := cdm.CreateCDMListener(ModellingBusConnector)
 
 	CDMLaTeXWriter := CreateCDMLaTeXWriter(config, reporter)

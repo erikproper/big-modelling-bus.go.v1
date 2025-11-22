@@ -107,7 +107,7 @@ func createModellingBusEventsConnector(topicBase, agentID string, configData *TC
 	e.mqttPassword = configData.GetValue("mqtt", "password").String()
 	e.mqttRoot = configData.GetValue("mqtt", "prefix").String() + "/" + topicBase
 	e.mqttMaxMessageSize = configData.GetValue("mqtt", "max_message_size").IntWithDefault(mqttMaxMessageSizeDefault)
-	
+
 	e.connectToMQTT()
 
 	return &e

@@ -15,6 +15,7 @@
 package mbconnect
 
 import (
+	"fmt"
 	"github.com/secsy/goftp"
 	"os"
 	"path/filepath"
@@ -112,7 +113,7 @@ func (r *tModellingBusRepositoryConnector) addFile(topicPath, fileName, fileExte
 	}
 	client.Close()
 
-	if ! r.singleServerMode {
+	if !r.singleServerMode {
 		repositoryEvent.Server = r.server
 		repositoryEvent.Port = r.port
 	}
@@ -122,19 +123,37 @@ func (r *tModellingBusRepositoryConnector) addFile(topicPath, fileName, fileExte
 	return repositoryEvent
 }
 
-func (r *tModellingBusRepositoryConnector) deleteFile(topicPath, fileName, fileExtension string) {
+func deleteRepositoryPath(client *goftp.Client, deletePath string) {
+	fmt.Println("Deleting:", deletePath)
+	client.Delete(deletePath)
+	fileInfos, _ := client.ReadDir(deletePath)
+	if len(fileInfos) > 0 {
+		//		if fileInfos.IsDir() {
+		fmt.Println("Deleting directory:", deletePath)
+		for _, fileInfo := range fileInfos {
+			deleteRepositoryPath(client, deletePath+"/"+fileInfo.Name())
+		}
+		client.Rmdir(deletePath)
+	}
+}
+
+func (r *tModellingBusRepositoryConnector) deletePath(topicPath string) {
 	// Connect to the FTP server
 	client, err := r.ftpConnect()
 	if err != nil {
-		r.reporter.Error("Couldn't open an FTP connection. %s", err)
+		r.reporter.Error("Couldn't open an FTP connection:", err)
 		return
 	}
 
-	err = client.Delete(r.agentRoot + "/" + topicPath + "/" + fileName + fileExtension)
-	if err != nil {
-		r.reporter.Error("Couldn't delete File. %s", err)
-		return
-	}
+	// Delete path from server
+	remotePath := r.agentRoot + "/" + topicPath
+	deleteRepositoryPath(client, remotePath)
+}
+
+func (r *tModellingBusRepositoryConnector) deleteFile(topicPath, fileName, fileExtension string) {
+	filePath := topicPath + "/" + fileName + fileExtension
+
+	r.deletePath(filePath)
 }
 
 func (r *tModellingBusRepositoryConnector) addJSONAsFile(topicPath string, json []byte) tRepositoryEvent {
@@ -168,7 +187,7 @@ func (r *tModellingBusRepositoryConnector) getFile(repositoryEvent tRepositoryEv
 	} else {
 		serverConnection = repositoryEvent.Server + ":" + repositoryEvent.Port
 	}
-	
+
 	client, err := goftp.DialConfig(config, serverConnection)
 	if err != nil {
 		r.reporter.Error("Something went wrong connecting to the FTP server", err)
