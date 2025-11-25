@@ -1,5 +1,3 @@
-[ ] Local working folder must be a visible attribute. Via function?
-
 [ ] Clean listener code
 
 [ ] Clean and document code

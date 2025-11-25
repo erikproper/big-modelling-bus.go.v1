@@ -3,7 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"modelling_bus_1.0/cdm"
+	"modelling_bus_1.0/mblanguages/cdm"
 	"modelling_bus_1.0/mbconnect"
 	"os"
 )
