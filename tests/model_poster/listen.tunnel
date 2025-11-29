@@ -1,1 +1,0 @@
-mosquitto_sub -h localhost -p 11883 -u modelling_bus -P Geheim1967 -v -t "#"
