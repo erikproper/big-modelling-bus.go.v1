@@ -1,3 +1,55 @@
+Eclipse Paho MQTT Go client
+===========================
+
+
+This repository contains the source code for the [Eclipse Paho](https://eclipse.org/paho) MQTT 3.1/3.11 Go client library.
+
+This code builds a library which enable applications to connect to an [MQTT](https://mqtt.org) broker to publish
+messages, and to subscribe to topics and receive published messages.
+
+This library supports a fully asynchronous mode of operation.
+
+A client supporting MQTT V5 is [also available](https://github.com/eclipse/paho.golang).
+
+Installation and Build
+----------------------
+
+The process depends upon whether you are using [modules](https://golang.org/ref/mod) (recommended) or `GOPATH`.
+
+#### Modules
+
+If you are using [modules](https://blog.golang.org/using-go-modules) then `import "github.com/eclipse/paho.mqtt.golang"`
+and start using it. The necessary packages will be download automatically when you run `go build`.
+
+Note that the latest release will be downloaded and changes may have been made since the release. If you have
+encountered an issue, or wish to try the latest code for another reason, then run
+`go get github.com/eclipse/paho.mqtt.golang@master` to get the latest commit.
+
+#### GOPATH
+
+Installation is as easy as:
+
+```
+go get github.com/eclipse/paho.mqtt.golang
+```
+
+The client depends on Google's [proxy](https://godoc.org/golang.org/x/net/proxy) package and the
+[websockets](https://godoc.org/github.com/gorilla/websocket) package, also easily installed with the commands:
+
+```
+go get github.com/gorilla/websocket
+go get golang.org/x/net/proxy
+```
+
+
+Usage and API
+-------------
+
+
+
+
+** The Modelling Bus **
+
 
 /**************************************************************************************
  *
