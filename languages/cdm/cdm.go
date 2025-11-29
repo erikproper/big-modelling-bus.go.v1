@@ -16,6 +16,7 @@ package cdm
 import (
 	"encoding/json"
 	"github.com/erikproper/big-modelling-bus.go.v1/connect"
+	"github.com/erikproper/big-modelling-bus.go.v1/generics"
 )
 
 const (
@@ -76,7 +77,7 @@ func (m *TCDMModel) Clean() {
 }
 
 func (m *TCDMModel) NewElementID() string {
-	return connect.GetTimestamp()
+	return generics.GetTimestamp()
 }
 
 func (m *TCDMModel) SetModelName(name string) {

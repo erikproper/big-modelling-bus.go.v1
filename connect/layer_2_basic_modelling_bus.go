@@ -17,6 +17,7 @@ package connect
 import (
 	"encoding/json"
 	"os"
+	"github.com/erikproper/big-modelling-bus.go.v1/generics"
 )
 
 type (
@@ -27,13 +28,13 @@ type (
 		agentID,
 		environmentID string
 
-		reporter   *TReporter
-		configData *TConfigData
+		reporter   *generics.TReporter
+		configData *generics.TConfigData
 	}
 )
 
 func (b *TModellingBusConnector) postFile(topicPath, localFilePath string) {
-	event := b.modellingBusRepositoryConnector.addFile(topicPath, localFilePath, GetTimestamp())
+	event := b.modellingBusRepositoryConnector.addFile(topicPath, localFilePath, generics.GetTimestamp())
 
 	message, err := json.Marshal(event)
 	if err != nil {
@@ -93,12 +94,12 @@ func (b *TModellingBusConnector) getJSONFromTemporaryFile(tempFilePath, timestam
 
 func (b *TModellingBusConnector) listenForJSONPostings(agentID, topicPath string, postingHandler func([]byte, string)) {
 	b.modellingBusEventsConnector.listenForEvents(agentID, topicPath, func(message []byte) {
-		postingHandler(b.getJSONFromTemporaryFile(b.getLinkedFileFromRepository(message, jsonFileName)))
+		postingHandler(b.getJSONFromTemporaryFile(b.getLinkedFileFromRepository(message, generics.JSONFileName)))
 	})
 }
 
 func (b *TModellingBusConnector) getJSON(agentID, topicPath string) ([]byte, string) {
-	tempFilePath, timestamp := b.getLinkedFileFromRepository(b.modellingBusEventsConnector.messageFromEvent(agentID, topicPath), jsonFileName)
+	tempFilePath, timestamp := b.getLinkedFileFromRepository(b.modellingBusEventsConnector.messageFromEvent(agentID, topicPath), generics.JSONFileName)
 
 	jsonPayload, err := os.ReadFile(tempFilePath)
 	os.Remove(tempFilePath)
@@ -133,7 +134,7 @@ func (b *TModellingBusConnector) DeleteEnvironment(environment ...string) {
 	b.modellingBusRepositoryConnector.deleteEnvironment(environmentToDelete)
 }
 
-func CreateModellingBusConnector(configData *TConfigData, reporter *TReporter) TModellingBusConnector {
+func CreateModellingBusConnector(configData *generics.TConfigData, reporter *generics.TReporter) TModellingBusConnector {
 	modellingBusConnector := TModellingBusConnector{}
 	modellingBusConnector.environmentID = configData.GetValue("", "environment").String()
 	modellingBusConnector.agentID = configData.GetValue("", "agent").String()

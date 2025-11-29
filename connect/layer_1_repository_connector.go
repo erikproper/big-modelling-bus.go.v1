@@ -20,6 +20,7 @@ import (
 	"strings"
 
 	"github.com/secsy/goftp"
+	"github.com/erikproper/big-modelling-bus.go.v1/generics"
 )
 
 type (
@@ -38,7 +39,7 @@ type (
 
 		createdPaths map[string]bool
 
-		reporter *TReporter
+		reporter *generics.TReporter
 	}
 )
 
@@ -54,11 +55,11 @@ func (r *tModellingBusRepositoryConnector) localFilePathFor(fileName string) str
 }
 
 func (r *tModellingBusRepositoryConnector) ftpEnvironmentTopicRootFor(environmentID string) string {
-	return r.prefix + "/" + ModellingBusVersion + "/" + environmentID
+	return r.prefix + "/" + generics.ModellingBusVersion + "/" + environmentID
 }
 
 func (r *tModellingBusRepositoryConnector) ftpTopicPath(topicPath string) string {
-	return r.prefix + "/" + ModellingBusVersion + "/" + r.environmentID + "/" + r.agentID + "/" + topicPath
+	return r.prefix + "/" + generics.ModellingBusVersion + "/" + r.environmentID + "/" + r.agentID + "/" + topicPath
 }
 
 func (r *tModellingBusRepositoryConnector) ftpConnect() (*goftp.Client, error) {
@@ -95,7 +96,7 @@ func (r *tModellingBusRepositoryConnector) mkRepositoryFilePath(remoteFilePath s
 
 func (r *tModellingBusRepositoryConnector) addFile(topicPath, localFilePath, timestamp string) tRepositoryEvent {
 	remoteFilePath := r.ftpTopicPath(topicPath)
-	remoteFilePayloadPath := remoteFilePath + "/" + filePayload
+	remotePayloadFileNamePath := remoteFilePath + "/" + generics.PayloadFileName
 
 	r.mkRepositoryFilePath(remoteFilePath)
 
@@ -113,10 +114,10 @@ func (r *tModellingBusRepositoryConnector) addFile(topicPath, localFilePath, tim
 		return repositoryEvent
 	}
 
-	err = client.Store(remoteFilePayloadPath, file)
+	err = client.Store(remotePayloadFileNamePath, file)
 	if err != nil {
 		r.reporter.Error("Error uploading file to ftp server. %s", err)
-		r.reporter.Error("For remote file path: %s", remoteFilePayloadPath)
+		r.reporter.Error("For remote file path: %s", remotePayloadFileNamePath)
 		return repositoryEvent
 	}
 
@@ -126,7 +127,7 @@ func (r *tModellingBusRepositoryConnector) addFile(topicPath, localFilePath, tim
 		repositoryEvent.Server = r.server
 		repositoryEvent.Port = r.port
 	}
-	repositoryEvent.FilePath = remoteFilePayloadPath
+	repositoryEvent.FilePath = remotePayloadFileNamePath
 
 	return repositoryEvent
 }
@@ -158,7 +159,7 @@ func (r *tModellingBusRepositoryConnector) deleteEnvironment(environment string)
 
 func (r *tModellingBusRepositoryConnector) addJSONAsFile(topicPath string, json []byte, timestamp string) tRepositoryEvent {
 	// Define the temporary local file path
-	localFilePath := r.localFilePathFor(jsonFileName)
+	localFilePath := r.localFilePathFor(generics.JSONFileName)
 
 	// Create a temporary local file with the JSON record
 	err := os.WriteFile(localFilePath, json, 0644)
@@ -211,7 +212,7 @@ func (r *tModellingBusRepositoryConnector) getFile(repositoryEvent tRepositoryEv
 	return localFileName
 }
 
-func createModellingBusRepositoryConnector(environmentID, agentID string, configData *TConfigData, reporter *TReporter) *tModellingBusRepositoryConnector {
+func createModellingBusRepositoryConnector(environmentID, agentID string, configData *generics.TConfigData, reporter *generics.TReporter) *tModellingBusRepositoryConnector {
 	r := tModellingBusRepositoryConnector{}
 
 	r.reporter = reporter
@@ -233,15 +234,15 @@ func createModellingBusRepositoryConnector(environmentID, agentID string, config
 	r.createdPaths = map[string]bool{}
 
 	if r.singleServerMode {
-		r.reporter.Progress(ProgressLevelDetailed, "Running the FTP connection in single server mode.")
+		r.reporter.Progress(generics.ProgressLevelDetailed, "Running the FTP connection in single server mode.")
 	} else {
-		r.reporter.Progress(ProgressLevelDetailed, "Running the FTP connection in multi server mode.")
+		r.reporter.Progress(generics.ProgressLevelDetailed, "Running the FTP connection in multi server mode.")
 	}
 
 	if r.activeTransfers {
-		r.reporter.Progress(ProgressLevelDetailed, "Running the FTP connection in active transfer mode.")
+		r.reporter.Progress(generics.ProgressLevelDetailed, "Running the FTP connection in active transfer mode.")
 	} else {
-		r.reporter.Progress(ProgressLevelDetailed, "Running the FTP connection in passive transfer mode.")
+		r.reporter.Progress(generics.ProgressLevelDetailed, "Running the FTP connection in passive transfer mode.")
 	}
 
 	return &r

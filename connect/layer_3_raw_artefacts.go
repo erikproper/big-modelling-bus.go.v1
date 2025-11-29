@@ -14,6 +14,10 @@
 
 package connect
 
+import (
+	"github.com/erikproper/big-modelling-bus.go.v1/generics"
+)
+
 const (
 	rawArtefactsFilePathElement = "artefacts/file"
 )
@@ -38,7 +42,7 @@ func (b *TModellingBusConnector) PostRawArtefact(context, format, fileName, loca
 func (b *TModellingBusConnector) ListenForRawArtefactPostings(agentID, context, format, fileName string, postingHandler func(string)) {
 	topicPath := b.rawArtefactPath(context, format, fileName)
 
-	b.listenForFilePostings(agentID, topicPath, jsonFileName, func(localFilePath, _ string) {
+	b.listenForFilePostings(agentID, topicPath, generics.JSONFileName, func(localFilePath, _ string) {
 		postingHandler(localFilePath)
 	})
 }

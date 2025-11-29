@@ -16,6 +16,7 @@ package connect
 
 import (
 	"encoding/json"
+	"github.com/erikproper/big-modelling-bus.go.v1/generics"
 )
 
 const (
@@ -89,7 +90,7 @@ func (b *TModellingBusArtefactConnector) postDelta(deltaTopicPath string, oldSta
 	}
 
 	delta := TJSONDelta{}
-	delta.Timestamp = GetTimestamp()
+	delta.Timestamp = generics.GetTimestamp()
 	delta.CurrentTimestamp = b.CurrentTimestamp
 	delta.Operations = deltaOperationsJSON
 
@@ -188,7 +189,7 @@ func (b *TModellingBusArtefactConnector) PostState(stateJSON []byte, err error) 
 		return
 	}
 
-	b.CurrentTimestamp = GetTimestamp()
+	b.CurrentTimestamp = generics.GetTimestamp()
 	b.CurrentContent = stateJSON
 	b.UpdatedContent = stateJSON
 	b.ConsideredContent = stateJSON
@@ -260,7 +261,7 @@ func CreateModellingBusArtefactConnector(ModellingBusConnector TModellingBusConn
 	ModellingBusArtefactConnector.CurrentContent = []byte{}
 	ModellingBusArtefactConnector.UpdatedContent = []byte{}
 	ModellingBusArtefactConnector.ConsideredContent = []byte{}
-	ModellingBusArtefactConnector.CurrentTimestamp = GetTimestamp()
+	ModellingBusArtefactConnector.CurrentTimestamp = generics.GetTimestamp()
 	ModellingBusArtefactConnector.stateCommunicated = false
 
 	return ModellingBusArtefactConnector
