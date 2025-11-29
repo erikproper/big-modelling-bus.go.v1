@@ -1,5 +1,7 @@
-Eclipse Paho MQTT Go client
-===========================
+BIG Modelling Bus Module
+=======================
+
+RAW COPY from MQTT client. Just to see what the syntax is of this file.
 
 
 This repository contains the source code for the [Eclipse Paho](https://eclipse.org/paho) MQTT 3.1/3.11 Go client library.
