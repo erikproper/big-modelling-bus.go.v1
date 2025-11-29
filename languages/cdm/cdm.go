@@ -15,7 +15,7 @@ package cdm
 
 import (
 	"encoding/json"
-	"modelling_bus_1.0/connect"
+	"github.com/erikproper/big-modelling-bus.go.v1/connect"
 )
 
 const (
