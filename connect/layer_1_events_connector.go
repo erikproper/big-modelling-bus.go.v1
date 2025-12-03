@@ -157,7 +157,6 @@ func (e *tModellingBusEventsConnector) listenForEvents(agentID, topicPath string
 		}
 	})
 	token.Wait()
-	crash
 }
 
 // Pro-actively get the (latest) message from the bus.
