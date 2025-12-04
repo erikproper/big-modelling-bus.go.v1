@@ -1,8 +1,8 @@
 /*
  *
- * Package: mbconnect
+ * Package: connect
  * Layer:   3
- * Module:  raw_artefacts
+ * Module:  raw_observation
  *
  * ..... ... .. .
  *
@@ -19,14 +19,8 @@ import (
 )
 
 const (
-	rawArtefactsFilePathElement = "artefacts/raw"
+	rawObservationFilePathElement = "observation/raw"
 )
-
-func (b *TModellingBusConnector) artefactsTopicPath(artefactID string) string {
-	return artefactsPathElement +
-		"/" + artefactID +
-		"/" + b.JSONVersion
-}
 
 /*
  *

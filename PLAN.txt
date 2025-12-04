@@ -1,3 +1,10 @@
+[ ] Cleanup/structure layer 3
+Use specialisations for all 3 (so, not 5):
+- JSON/RAW AFs
+- JSON/RAW OBs
+- Coordination
+So ... also merge the files?
+
 [ ] Command lines:
 mbus 
   -config <xxx>.ini
@@ -17,9 +24,6 @@ mbus
   -delete
   ---
   -delete_experiment <e>
-
-[ ] var (
-	configFlag      = flag.String("config", defaultIni, "Configuration file")
 
 
 [ ] CDM listener and poster as cdm rest repos
