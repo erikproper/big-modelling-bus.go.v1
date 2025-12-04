@@ -31,10 +31,10 @@ type (
 	}
 
 	TCDMModel struct {
-		ModelName                  string                                     `json:"model name"`
-		ModellingBusArtefactPoster connect.TModellingBusJSONArtefactConnector `json:"-"`
-		TypeIDCount                int                                        `json:"-"`
-		InstanceIDCount            int                                        `json:"-"`
+		ModelName                  string                                 `json:"model name"`
+		ModellingBusArtefactPoster connect.TModellingBusArtefactConnector `json:"-"`
+		TypeIDCount                int                                    `json:"-"`
+		InstanceIDCount            int                                    `json:"-"`
 
 		// For types
 		TypeName map[string]string `json:"type names"`
@@ -176,7 +176,7 @@ func CreateCDMPoster(ModellingBusConnector connect.TModellingBusConnector, model
 	CDMPosterModel := CreateCDMModel()
 
 	// Note: One ModellingBusConnector can be used for different artefacts with different json versions.
-	CDMPosterModel.ModellingBusArtefactPoster = connect.CreateModellingBusJSONArtefactConnector(ModellingBusConnector, ModelJSONVersion)
+	CDMPosterModel.ModellingBusArtefactPoster = connect.CreateModellingBusArtefactConnector(ModellingBusConnector, ModelJSONVersion)
 	CDMPosterModel.ModellingBusArtefactPoster.PrepareForPosting(modelID)
 
 	return CDMPosterModel
@@ -201,27 +201,27 @@ func (m *TCDMModel) PostConsidering() {
  */
 
 // Note: One ModellingBusConnector can be used for different models of different kinds.
-func CreateCDMListener(ModellingBusConnector connect.TModellingBusConnector) connect.TModellingBusJSONArtefactConnector {
-	ModellingBusCDMModelListener := connect.CreateModellingBusJSONArtefactConnector(ModellingBusConnector, ModelJSONVersion)
+func CreateCDMListener(ModellingBusConnector connect.TModellingBusConnector) connect.TModellingBusArtefactConnector {
+	ModellingBusCDMModelListener := connect.CreateModellingBusArtefactConnector(ModellingBusConnector, ModelJSONVersion)
 
 	return ModellingBusCDMModelListener
 }
 
-func (m *TCDMModel) GetStateFromBus(artefactBus connect.TModellingBusJSONArtefactConnector) bool {
+func (m *TCDMModel) GetStateFromBus(artefactBus connect.TModellingBusArtefactConnector) bool {
 	m.Clean()
 	err := json.Unmarshal(artefactBus.CurrentContent, m)
 
 	return err == nil
 }
 
-func (m *TCDMModel) GetUpdatedFromBus(artefactBus connect.TModellingBusJSONArtefactConnector) bool {
+func (m *TCDMModel) GetUpdatedFromBus(artefactBus connect.TModellingBusArtefactConnector) bool {
 	m.Clean()
 	err := json.Unmarshal(artefactBus.UpdatedContent, m)
 
 	return err == nil
 }
 
-func (m *TCDMModel) GetConsideredFromBus(artefactBus connect.TModellingBusJSONArtefactConnector) bool {
+func (m *TCDMModel) GetConsideredFromBus(artefactBus connect.TModellingBusArtefactConnector) bool {
 	m.Clean()
 	err := json.Unmarshal(artefactBus.ConsideredContent, m)
 
