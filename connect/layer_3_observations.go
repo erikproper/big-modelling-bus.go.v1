@@ -81,6 +81,10 @@ func (b *TModellingBusConnector) ListenForJSONObservationPostings(agentID, obser
 	})
 }
 
+//func (b *TModellingBusConnector) PostStreamedObservation(observationID string, json []byte) {
+//	b.postJSONAsStreamed(b.streamedObservationsTopicPath(observationID), json, generics.GetTimestamp())
+//}
+
 /*
  * Retrieving observations
  */

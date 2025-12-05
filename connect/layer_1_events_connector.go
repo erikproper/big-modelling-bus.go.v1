@@ -163,12 +163,12 @@ func (e *tModellingBusEventsConnector) listenForEvents(agentID, topicPath string
 func (e *tModellingBusEventsConnector) messageFromEvent(agentID, topicPath string) []byte {
 	mqttTopicPath := e.mqttAgentTopicPath(agentID, topicPath)
 
-	message := e.openingMessages[mqttTopicPath]
+	message := e.currentMessages[mqttTopicPath]
 	// When messageFromEvent is called too soon after opening the connection to the MQTT broker,
-	// we may not have received a message yet. So, we need to be patient. Once.
+	// we may not have received a message yet. So, we need to be "waitForMQTT" patient.
 	if len(message) == 0 {
 		e.waitForMQTT()
-		message = e.openingMessages[mqttTopicPath]
+		message = e.currentMessages[mqttTopicPath]
 	}
 
 	return message
