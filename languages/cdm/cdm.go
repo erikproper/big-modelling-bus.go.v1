@@ -183,15 +183,15 @@ func CreateCDMPoster(ModellingBusConnector connect.TModellingBusConnector, model
 }
 
 func (m *TCDMModel) PostState() {
-	m.ModellingBusArtefactPoster.PostState(json.Marshal(m))
+	m.ModellingBusArtefactPoster.PostStateJSONArtefact(json.Marshal(m))
 }
 
 func (m *TCDMModel) PostUpdate() {
-	m.ModellingBusArtefactPoster.PostUpdate(json.Marshal(m))
+	m.ModellingBusArtefactPoster.PostUpdateJSONArtefact(json.Marshal(m))
 }
 
 func (m *TCDMModel) PostConsidering() {
-	m.ModellingBusArtefactPoster.PostConsidering(json.Marshal(m))
+	m.ModellingBusArtefactPoster.PostConsideringJSONArtefact(json.Marshal(m))
 }
 
 /*

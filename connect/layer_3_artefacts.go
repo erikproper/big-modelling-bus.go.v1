@@ -57,17 +57,17 @@ func (b *TModellingBusArtefactConnector) jsonArtefactsTopicPath(artefactID strin
 		"/" + b.JSONVersion
 }
 
-func (b *TModellingBusArtefactConnector) artefactsStateTopicPath(artefactID string) string {
+func (b *TModellingBusArtefactConnector) jsonArtefactsStateTopicPath(artefactID string) string {
 	return b.jsonArtefactsTopicPath(artefactID) +
 		"/" + artefactStatePathElement
 }
 
-func (b *TModellingBusArtefactConnector) artefactsUpdateTopicPath(artefactID string) string {
+func (b *TModellingBusArtefactConnector) jsonArtefactsUpdateTopicPath(artefactID string) string {
 	return b.jsonArtefactsTopicPath(artefactID) +
 		"/" + artefactUpdatePathElement
 }
 
-func (b *TModellingBusArtefactConnector) artefactsConsideringTopicPath(artefactID string) string {
+func (b *TModellingBusArtefactConnector) jsonArtefactsConsideringTopicPath(artefactID string) string {
 	return b.jsonArtefactsTopicPath(artefactID) +
 		"/" + artefactConsideringPathElement
 }
@@ -84,7 +84,7 @@ type TJSONDelta struct {
 	CurrentTimestamp string          `json:"current timestamp"`
 }
 
-func (b *TModellingBusArtefactConnector) postDelta(deltaTopicPath string, oldStateJSON, newStateJSON []byte, err error) {
+func (b *TModellingBusArtefactConnector) postJSONDelta(deltaTopicPath string, oldStateJSON, newStateJSON []byte, err error) {
 	// Can we avoid dragging the err in here??
 	if err != nil {
 		b.ModellingBusConnector.Reporter.Error("Something went wrong when converting to JSON. %s", err)
@@ -111,7 +111,7 @@ func (b *TModellingBusArtefactConnector) postDelta(deltaTopicPath string, oldSta
 	b.ModellingBusConnector.postJSON(deltaTopicPath, deltaJSON, delta.Timestamp)
 }
 
-func (b *TModellingBusArtefactConnector) applyDelta(currentJSONState json.RawMessage, deltaJSON []byte) (json.RawMessage, bool) {
+func (b *TModellingBusArtefactConnector) applyJSONDelta(currentJSONState json.RawMessage, deltaJSON []byte) (json.RawMessage, bool) {
 	delta := TJSONDelta{}
 	err := json.Unmarshal(deltaJSON, &delta)
 	if err != nil {
@@ -132,16 +132,16 @@ func (b *TModellingBusArtefactConnector) applyDelta(currentJSONState json.RawMes
 	return newJSONState, true
 }
 
-func (b *TModellingBusArtefactConnector) updateCurrent(json []byte, currentTimestamp string) {
+func (b *TModellingBusArtefactConnector) updateCurrentJSON(json []byte, currentTimestamp string) {
 	b.CurrentContent = json
 	b.UpdatedContent = json
 	b.ConsideredContent = json
 	b.CurrentTimestamp = currentTimestamp
 }
 
-func (b *TModellingBusArtefactConnector) updateUpdated(json []byte, _ ...string) bool {
+func (b *TModellingBusArtefactConnector) updateUpdatedJSON(json []byte, _ ...string) bool {
 	ok := false
-	b.UpdatedContent, ok = b.applyDelta(b.CurrentContent, json)
+	b.UpdatedContent, ok = b.applyJSONDelta(b.CurrentContent, json)
 	if ok {
 		b.ConsideredContent = b.UpdatedContent
 	}
@@ -149,9 +149,9 @@ func (b *TModellingBusArtefactConnector) updateUpdated(json []byte, _ ...string)
 	return ok
 }
 
-func (b *TModellingBusArtefactConnector) updateConsidering(json []byte, _ ...string) bool {
+func (b *TModellingBusArtefactConnector) updateConsideringJSON(json []byte, _ ...string) bool {
 	ok := false
-	b.ConsideredContent, ok = b.applyDelta(b.UpdatedContent, json)
+	b.ConsideredContent, ok = b.applyJSONDelta(b.UpdatedContent, json)
 
 	return ok
 }
@@ -179,39 +179,39 @@ func (b *TModellingBusArtefactConnector) PrepareForPosting(ArtefactID string) {
 	b.ArtefactID = ArtefactID
 }
 
-func (b *TModellingBusArtefactConnector) PostRawArtefact(topicPath, localFilePath string) {
+func (b *TModellingBusArtefactConnector) PostRawArtefactState(topicPath, localFilePath string) {
 	b.ModellingBusConnector.postFile(b.rawArtefactsTopicPath(b.ArtefactID), localFilePath)
 }
 
-func (b *TModellingBusArtefactConnector) PostConsidering(consideringStateJSON []byte, err error) {
+func (b *TModellingBusArtefactConnector) PostConsideringJSONArtefact(consideringStateJSON []byte, err error) {
 	if b.foundJSONIssue(err) {
 		return
 	}
 	if !b.stateCommunicated {
-		b.PostState(b.CurrentContent, err)
+		b.PostStateJSONArtefact(b.CurrentContent, err)
 	}
 
 	b.ConsideredContent = consideringStateJSON
 
-	b.postDelta(b.artefactsConsideringTopicPath(b.ArtefactID), b.UpdatedContent, b.ConsideredContent, err)
+	b.postJSONDelta(b.jsonArtefactsConsideringTopicPath(b.ArtefactID), b.UpdatedContent, b.ConsideredContent, err)
 }
 
-func (b *TModellingBusArtefactConnector) PostUpdate(updatedStateJSON []byte, err error) {
+func (b *TModellingBusArtefactConnector) PostUpdateJSONArtefact(updatedStateJSON []byte, err error) {
 	if b.foundJSONIssue(err) {
 		return
 	}
 
 	if !b.stateCommunicated {
-		b.PostState(updatedStateJSON, err)
+		b.PostStateJSONArtefact(updatedStateJSON, err)
 	}
 
 	b.UpdatedContent = updatedStateJSON
 	b.ConsideredContent = updatedStateJSON
 
-	b.postDelta(b.artefactsUpdateTopicPath(b.ArtefactID), b.CurrentContent, b.UpdatedContent, err)
+	b.postJSONDelta(b.jsonArtefactsUpdateTopicPath(b.ArtefactID), b.CurrentContent, b.UpdatedContent, err)
 }
 
-func (b *TModellingBusArtefactConnector) PostState(stateJSON []byte, err error) {
+func (b *TModellingBusArtefactConnector) PostStateJSONArtefact(stateJSON []byte, err error) {
 	if b.foundJSONIssue(err) {
 		return
 	}
@@ -221,78 +221,80 @@ func (b *TModellingBusArtefactConnector) PostState(stateJSON []byte, err error) 
 	b.UpdatedContent = stateJSON
 	b.ConsideredContent = stateJSON
 
-	b.ModellingBusConnector.postJSON(b.artefactsStateTopicPath(b.ArtefactID), b.CurrentContent, b.CurrentTimestamp)
+	b.ModellingBusConnector.postJSON(b.jsonArtefactsStateTopicPath(b.ArtefactID), b.CurrentContent, b.CurrentTimestamp)
 
 	b.stateCommunicated = true
 }
 
 /*
- * Current state listening & getting
+ * Current state listening
  */
 
-//b.rawArtefactsTopicPath(b.ArtefactID)
-
-func (b *TModellingBusArtefactConnector) ListenForRawArtefactPostings(agentID, topicPath string, postingHandler func(string)) {
-	b.ModellingBusConnector.listenForFilePostings(agentID, topicPath, generics.JSONFileName, func(localFilePath, _ string) {
+// b.rawArtefactsTopicPath(b.ArtefactID)
+func (b *TModellingBusArtefactConnector) ListenForRawArtefactPostings(agentID, artefactID string, postingHandler func(string)) {
+	b.ModellingBusConnector.listenForFilePostings(agentID, b.rawArtefactsTopicPath(artefactID), generics.JSONFileName, func(localFilePath, _ string) {
 		postingHandler(localFilePath)
 	})
 }
+
+func (b *TModellingBusArtefactConnector) ListenForJSONStatePostings(agentID, artefactID string, handler func()) {
+	b.ModellingBusConnector.listenForJSONPostings(agentID, b.jsonArtefactsStateTopicPath(artefactID), func(json []byte, currentTimestamp string) {
+		b.updateCurrentJSON(json, currentTimestamp)
+		handler()
+	})
+}
+
+func (b *TModellingBusArtefactConnector) ListenForJSONUpdatePostings(agentID, artefactID string, handler func()) {
+	b.ModellingBusConnector.listenForJSONPostings(agentID, b.jsonArtefactsUpdateTopicPath(artefactID), func(json []byte, _ string) {
+		if b.updateUpdatedJSON(json) {
+			handler()
+		}
+	})
+}
+
+func (b *TModellingBusArtefactConnector) ListenForJSONConsideringPostings(agentID, artefactID string, handler func()) {
+	b.ModellingBusConnector.listenForJSONPostings(agentID, b.jsonArtefactsConsideringTopicPath(artefactID), func(json []byte, _ string) {
+		if b.updateConsideringJSON(json) {
+			handler()
+		}
+	})
+}
+
+/*
+ * Current state getting
+ */
 
 func (b *TModellingBusArtefactConnector) GetRawArtefact(agentID, topicPath, localFileName string) string {
 	localFilePath, _ := b.ModellingBusConnector.getFileFromPosting(agentID, topicPath, localFileName)
 	return localFilePath
 }
 
-func (b *TModellingBusArtefactConnector) ListenForStatePostings(agentID, artefactID string, handler func()) {
-	b.ModellingBusConnector.listenForJSONPostings(agentID, b.artefactsStateTopicPath(artefactID), func(json []byte, currentTimestamp string) {
-		b.updateCurrent(json, currentTimestamp)
-		handler()
-	})
+func (b *TModellingBusArtefactConnector) GetJSONState(agentID, artefactID string) {
+	b.updateCurrentJSON(b.ModellingBusConnector.getJSON(agentID, b.jsonArtefactsStateTopicPath(artefactID)))
 }
 
-func (b *TModellingBusArtefactConnector) GetState(agentID, artefactID string) {
-	b.updateCurrent(b.ModellingBusConnector.getJSON(agentID, b.artefactsStateTopicPath(artefactID)))
+func (b *TModellingBusArtefactConnector) GetJSONUpdate(agentID, artefactID string) {
+	b.GetJSONState(agentID, artefactID)
+
+	b.updateUpdatedJSON(b.ModellingBusConnector.getJSON(agentID, b.jsonArtefactsUpdateTopicPath(artefactID)))
 }
 
-/*
- * Updated state listening & getting
- */
+func (b *TModellingBusArtefactConnector) GetJSONConsidering(agentID, artefactID string) {
+	b.GetJSONUpdate(agentID, artefactID)
 
-func (b *TModellingBusArtefactConnector) ListenForUpdatePostings(agentID, artefactID string, handler func()) {
-	b.ModellingBusConnector.listenForJSONPostings(agentID, b.artefactsUpdateTopicPath(artefactID), func(json []byte, _ string) {
-		if b.updateUpdated(json) {
-			handler()
-		}
-	})
-}
-
-func (b *TModellingBusArtefactConnector) GetUpdate(agentID, artefactID string) {
-	b.GetState(agentID, artefactID)
-
-	b.updateUpdated(b.ModellingBusConnector.getJSON(agentID, b.artefactsUpdateTopicPath(artefactID)))
+	b.updateConsideringJSON(b.ModellingBusConnector.getJSON(agentID, b.jsonArtefactsConsideringTopicPath(artefactID)))
 }
 
 /*
- * Considered state listening & getting
+ * Deleting
  */
 
-func (b *TModellingBusArtefactConnector) ListenForConsideringPostings(agentID, artefactID string, handler func()) {
-	b.ModellingBusConnector.listenForJSONPostings(agentID, b.artefactsConsideringTopicPath(artefactID), func(json []byte, _ string) {
-		if b.updateConsidering(json) {
-			handler()
-		}
-	})
+func (b *TModellingBusArtefactConnector) DeleteRawArtefact(artefactID string) {
+	b.ModellingBusConnector.deletePosting(b.rawArtefactsTopicPath(artefactID))
 }
 
-func (b *TModellingBusArtefactConnector) GetConsidering(agentID, artefactID string) {
-	b.GetUpdate(agentID, artefactID)
-
-	b.updateConsidering(b.ModellingBusConnector.getJSON(agentID, b.artefactsConsideringTopicPath(artefactID)))
-}
-
-// // Needed??
-func (b *TModellingBusArtefactConnector) DeleteRawArtefact(topicPath string) {
-	b.ModellingBusConnector.deletePosting(topicPath)
+func (b *TModellingBusArtefactConnector) DeleteJSONArtefact(artefactID string) {
+	b.ModellingBusConnector.deletePosting(b.jsonArtefactsTopicPath(artefactID))
 }
 
 /*
