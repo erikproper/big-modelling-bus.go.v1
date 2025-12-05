@@ -1,8 +1,8 @@
 /*
  *
- * Package: connect
- * Layer:   3
- * Module:  artefacts
+ * Module:    BIG Modelling Bus
+ * Package:   Generic
+ * Component: Layer 3 - Artefacts
  *
  * ..... ... .. .
  *

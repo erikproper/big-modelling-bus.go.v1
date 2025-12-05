@@ -1,8 +1,8 @@
 /*
  *
- * Package: mbconnect
- * Layer:   1
- * Module:  events_connector
+ * Module:    BIG Modelling Bus
+ * Package:   Generic
+ * Component: Layer 1 - Events Connector
  *
  * ..... ... .. .
  *

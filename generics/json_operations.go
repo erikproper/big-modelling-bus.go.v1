@@ -1,8 +1,8 @@
 /*
  *
- * Package: mbconnect
- * Layer:   3
- * Module:  json_operations
+ * Module:    BIG Modelling Bus
+ * Package:   Generic
+ * Component: JSON Operations
  *
  * ..... ... .. .
  *
@@ -12,7 +12,7 @@
  *
  */
 
-package connect
+package generics
 
 import (
 	"encoding/json"

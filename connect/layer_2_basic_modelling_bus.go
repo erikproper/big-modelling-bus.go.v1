@@ -1,8 +1,8 @@
 /*
  *
- * Package: mbconnect
- * Layer:   2
- * Module:  basic_modelling_bus
+ * Module:    BIG Modelling Bus
+ * Package:   Generic
+ * Component: Layer 1 - Basic Modelling Bus
  *
  * ..... ... .. .
  *
