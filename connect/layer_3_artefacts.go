@@ -198,7 +198,7 @@ func (b *TModellingBusArtefactConnector) PostJSONArtefactState(stateJSON []byte,
 	b.stateCommunicated = true
 }
 
-func (b *TModellingBusArtefactConnector) PostUpdateJSONArtefact(updatedStateJSON []byte, err error) {
+func (b *TModellingBusArtefactConnector) PostJSONArtefactUpdate(updatedStateJSON []byte, err error) {
 	if b.foundJSONIssue(err) {
 		return
 	}
@@ -213,7 +213,7 @@ func (b *TModellingBusArtefactConnector) PostUpdateJSONArtefact(updatedStateJSON
 	b.postJSONDelta(b.jsonArtefactsUpdateTopicPath(b.ArtefactID), b.CurrentContent, b.UpdatedContent, err)
 }
 
-func (b *TModellingBusArtefactConnector) PostConsideringJSONArtefact(consideringStateJSON []byte, err error) {
+func (b *TModellingBusArtefactConnector) PostJSONArtefactConsidering(consideringStateJSON []byte, err error) {
 	if b.foundJSONIssue(err) {
 		return
 	}
@@ -230,21 +230,20 @@ func (b *TModellingBusArtefactConnector) PostConsideringJSONArtefact(considering
  * Current state listening
  */
 
-// b.rawArtefactsTopicPath(b.ArtefactID)
 func (b *TModellingBusArtefactConnector) ListenForRawArtefactPostings(agentID, artefactID string, postingHandler func(string)) {
 	b.ModellingBusConnector.listenForFilePostings(agentID, b.rawArtefactsTopicPath(artefactID), generics.JSONFileName, func(localFilePath, _ string) {
 		postingHandler(localFilePath)
 	})
 }
 
-func (b *TModellingBusArtefactConnector) ListenForJSONStatePostings(agentID, artefactID string, handler func()) {
+func (b *TModellingBusArtefactConnector) ListenForJSONArtefactStatePostings(agentID, artefactID string, handler func()) {
 	b.ModellingBusConnector.listenForJSONPostings(agentID, b.jsonArtefactsStateTopicPath(artefactID), func(json []byte, currentTimestamp string) {
 		b.updateCurrentJSON(json, currentTimestamp)
 		handler()
 	})
 }
 
-func (b *TModellingBusArtefactConnector) ListenForJSONUpdatePostings(agentID, artefactID string, handler func()) {
+func (b *TModellingBusArtefactConnector) ListenForJSONArtefactUpdatePostings(agentID, artefactID string, handler func()) {
 	b.ModellingBusConnector.listenForJSONPostings(agentID, b.jsonArtefactsUpdateTopicPath(artefactID), func(json []byte, _ string) {
 		if b.updateUpdatedJSON(json) {
 			handler()
@@ -252,7 +251,7 @@ func (b *TModellingBusArtefactConnector) ListenForJSONUpdatePostings(agentID, ar
 	})
 }
 
-func (b *TModellingBusArtefactConnector) ListenForJSONConsideringPostings(agentID, artefactID string, handler func()) {
+func (b *TModellingBusArtefactConnector) ListenForJSONArtefactConsideringPostings(agentID, artefactID string, handler func()) {
 	b.ModellingBusConnector.listenForJSONPostings(agentID, b.jsonArtefactsConsideringTopicPath(artefactID), func(json []byte, _ string) {
 		if b.updateConsideringJSON(json) {
 			handler()

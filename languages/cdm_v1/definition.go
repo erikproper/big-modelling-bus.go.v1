@@ -187,11 +187,11 @@ func (m *TCDMModel) PostState() {
 }
 
 func (m *TCDMModel) PostUpdate() {
-	m.ModellingBusArtefactPoster.PostUpdateJSONArtefact(json.Marshal(m))
+	m.ModellingBusArtefactPoster.PostJSONArtefactUpdate(json.Marshal(m))
 }
 
 func (m *TCDMModel) PostConsidering() {
-	m.ModellingBusArtefactPoster.PostConsideringJSONArtefact(json.Marshal(m))
+	m.ModellingBusArtefactPoster.PostJSONArtefactConsidering(json.Marshal(m))
 }
 
 /*
