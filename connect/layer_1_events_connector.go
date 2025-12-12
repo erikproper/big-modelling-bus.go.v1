@@ -30,25 +30,27 @@ import (
 
 type (
 	tModellingBusEventsConnector struct {
-		user, /* MQTT user */
-		port, /* MQTT port */
-		broker, /* MQTT broker */
-		prefix, /* MQTT topic prefix */
-		agentID, /* Agent ID to be used in postings on the MQTT bus */
-		password, /* MQTT password */
-		environmentID string /* Modelling environment ID */
+		user, // MQTT user
+		port, // MQTT port
+		broker, // MQTT broker
+		prefix, // MQTT topic prefix
+		agentID, // Agent ID to be used in postings on the MQTT bus
+		password, // MQTT password
+		environmentID string // Modelling environment ID
 
-		loadDelay int /* Delay (in milliseconds) to allow messages to arrive from the MQTT bus */
+		loadDelay int // Delay (in milliseconds) to allow messages to arrive from the MQTT bus
 
-		connectionBeingOpenened bool /* Whether the MQTT connection is still being opened. */
-		/* The opening phase is special, as we need to collect all existing messages on the bus. CHECK!!! */
+		connectionBeingOpenened bool // Whether the MQTT connection is still being opened.
+		// The opening phase is special, as we need to collect all existing messages on the bus. CHECK!!!
 
-		currentMessages, /* Currently known messages on the MQTT bus */
-		openingMessages map[string][]byte /* Messages known at the opening of the connection to the MQTT bus */
+		currentMessages, // Currently known messages on the MQTT bus
+		openingMessages map[string][]byte // Messages known at the opening of the connection to the MQTT bus
+		// We need this to enable deletion of topics, as well as to be able to pro-actively
+		// pull information from the modelling bus
 
-		client mqtt.Client /* The MQTT client */
+		client mqtt.Client // The MQTT client
 
-		reporter *generics.TReporter /* The Reporter to be used to report progress, error, and panics */
+		reporter *generics.TReporter // The Reporter to be used to report progress, error, and panics
 	}
 )
 
@@ -72,30 +74,42 @@ func (e *tModellingBusEventsConnector) mqttAgentTopicPath(agentID, topicPath str
 	return e.prefix + "/" + generics.ModellingBusVersion + "/" + e.environmentID + "/" + agentID + "/" + topicPath
 }
 
-////
+/*
+ * Connecting to MQTT
+ */
 
+// Connection lost handler
 func (e *tModellingBusEventsConnector) connectionLostHandler(c mqtt.Client, err error) {
 	e.reporter.Panic("MQTT connection lost. %s", err)
 }
 
+// Wait for a while to allow messages to arrive from the MQTT bus
 func (e *tModellingBusEventsConnector) waitForMQTT() {
 	e.reporter.Progress(generics.ProgressLevelDetailed, "Sleeping for %d miliseconds to collect information from the MQTT bus.", e.loadDelay)
 	time.Sleep(time.Duration(e.loadDelay) * time.Second / 1000)
 }
 
+// Collect all MQTT topics for a given modelling environment
 func (e *tModellingBusEventsConnector) collectTopicsForModellingEnvironment(environmentID string) {
 	token := e.client.Subscribe(e.mqttEnvironmentTopicListFor(environmentID), 0, func(client mqtt.Client, msg mqtt.Message) {
 		topic := msg.Topic()
 		payload := msg.Payload()
+
 		if len(payload) == 0 {
+			// If the payload is empty, the topic has been deleted
 			delete(e.openingMessages, topic)
 			delete(e.currentMessages, topic)
 		} else {
+			// Otherwise, store the message
+
 			if e.connectionBeingOpenened {
+				// During opening, we need to store both opening and current messages
 				e.openingMessages[topic] = payload
 				e.currentMessages[topic] = payload
 			} else {
+				// After opening, we only need to store current messages
 				if _, defined := e.openingMessages[topic]; !defined {
+					// If not yet defined, define the openingMessage fot this topic with empty payload
 					e.openingMessages[topic] = []byte{}
 				}
 				e.currentMessages[topic] = payload
@@ -107,8 +121,10 @@ func (e *tModellingBusEventsConnector) collectTopicsForModellingEnvironment(envi
 	e.waitForMQTT()
 
 	if len(e.openingMessages) == 0 {
+		// No topics found
 		e.reporter.Progress(generics.ProgressLevelDetailed, "No topics found.")
 	} else {
+		// Topics found, so let's list them
 		e.reporter.Progress(generics.ProgressLevelDetailed, "Found topic(s):")
 		for topic := range e.openingMessages {
 			if strings.HasPrefix(topic, e.mqttEnvironmentTopicRoot()) {
@@ -118,13 +134,16 @@ func (e *tModellingBusEventsConnector) collectTopicsForModellingEnvironment(envi
 	}
 }
 
+// Connect to the MQTT broker
 func (e *tModellingBusEventsConnector) connectToMQTT(postingOnly bool) {
+	// Setting up MQTT connection options
 	opts := mqtt.NewClientOptions()
 	opts.AddBroker("tcp://" + e.broker + ":" + e.port)
 	opts.SetUsername(e.user)
 	opts.SetPassword(e.password)
 	opts.SetConnectionLostHandler(e.connectionLostHandler)
 
+	// Connecting to the MQTT broker
 	connected := false
 	for !connected {
 		e.reporter.Progress(generics.ProgressLevelBasic, "Trying to connect to the MQTT broker.")
@@ -143,14 +162,17 @@ func (e *tModellingBusEventsConnector) connectToMQTT(postingOnly bool) {
 		}
 	}
 
+	// Initialising message storage
 	e.openingMessages = map[string][]byte{}
+	e.currentMessages = map[string][]byte{}
 	if connected {
 		e.reporter.Progress(generics.ProgressLevelBasic, "Connected to the MQTT broker.")
 
-		// Continuously connect all used topics underneath the topic root, and their messages
-		// We need this to enable deletion of topics, as well as to be able to pro-actively
-		// pull information from the modelling bus
 		if !postingOnly {
+			// Unless we will be postingOnly, continuously connect all used topics underneath the
+			// topic root, and their messages.
+			// We need this information to enable deletion of topics, as well as to be able to
+			// pro-actively pull information from the modelling bus
 			e.collectTopicsForModellingEnvironment(e.environmentID)
 		}
 
@@ -158,19 +180,24 @@ func (e *tModellingBusEventsConnector) connectToMQTT(postingOnly bool) {
 	}
 }
 
-// / Document the QoS choices.
-func (e *tModellingBusEventsConnector) listenForEvents(agentID, topicPath string, eventHandler func([]byte)) {
-	mqttTopicPath := e.mqttAgentTopicPath(agentID, topicPath)
+/*
+ *  Posting things
+ */
 
-	token := e.client.Subscribe(mqttTopicPath, 0, func(client mqtt.Client, msg mqtt.Message) {
-		payload := msg.Payload()
-
-		if len(payload) > 0 && string(e.openingMessages[mqttTopicPath]) != string(payload) {
-			eventHandler(payload)
-		}
-	})
+// Post a message on a given topic path
+func (e *tModellingBusEventsConnector) postMessage(topicPath string, message []byte) {
+	token := e.client.Publish(topicPath, 0, true, string(message))
 	token.Wait()
 }
+
+// Post an event on a given topic path
+func (e *tModellingBusEventsConnector) postEvent(topicPath string, message []byte) {
+	e.postMessage(e.mqttAgentTopicPath(e.agentID, topicPath), message)
+}
+
+/*
+ *  Retrieving things
+ */
 
 // Pro-actively get the (latest) message from the bus.
 func (e *tModellingBusEventsConnector) messageFromEvent(agentID, topicPath string) []byte {
@@ -187,19 +214,35 @@ func (e *tModellingBusEventsConnector) messageFromEvent(agentID, topicPath strin
 	return message
 }
 
-func (e *tModellingBusEventsConnector) postMessage(topicPath string, message []byte) {
-	token := e.client.Publish(topicPath, 0, true, string(message))
+/*
+ *  Listening for events
+ */
+
+// Listen for events on a given topic path for a given agent
+func (e *tModellingBusEventsConnector) listenForEvents(agentID, topicPath string, eventHandler func([]byte)) {
+	mqttTopicPath := e.mqttAgentTopicPath(agentID, topicPath)
+
+	// Setting up the subscription
+	token := e.client.Subscribe(mqttTopicPath, 0, func(client mqtt.Client, msg mqtt.Message) {
+		payload := msg.Payload()
+
+		if len(payload) > 0 && string(e.openingMessages[mqttTopicPath]) != string(payload) {
+			eventHandler(payload)
+		}
+	})
 	token.Wait()
 }
 
-func (e *tModellingBusEventsConnector) postEvent(topicPath string, message []byte) {
-	e.postMessage(e.mqttAgentTopicPath(e.agentID, topicPath), message)
-}
+/*
+ *  Deleting postings
+ */
 
+// Delete a given topic path
 func (e *tModellingBusEventsConnector) deletePath(topicPath string) {
 	e.postMessage(topicPath, []byte{})
 }
 
+// Delete a given topic path
 func (e *tModellingBusEventsConnector) deletePostingPath(topicPath string) {
 	e.postEvent(topicPath, []byte{})
 }
@@ -213,6 +256,10 @@ func (e *tModellingBusEventsConnector) deleteEnvironment(environmentID string) {
 		}
 	}
 }
+
+/*
+ * Creating bus event connectors
+ */
 
 func createModellingBusEventsConnector(environmentID, agentID string, configData *generics.TConfigData, reporter *generics.TReporter, postingOnly bool) *tModellingBusEventsConnector {
 	e := tModellingBusEventsConnector{}
@@ -244,5 +291,7 @@ func createModellingBusEventsConnector(environmentID, agentID string, configData
  */
 
 const (
+	// When creating an events connector only for posting, then use this constant to set this to true
+	// In this case, the connector will not collect existing messages from the bus
 	PostingOnly = true
 )
