@@ -29,19 +29,19 @@ import (
 // defined by the "gopkg.in/ini.v1" package.
 type (
 	TConfigData struct {
-		configFile *ini.File
+		configFile *ini.File // The ini file as read by the ini package
 	}
 
 	TConfigValue struct {
-		configKey *ini.Key
+		configKey *ini.Key // The ini key as read by the ini package
 	}
 )
 
 // Load the configuration file.
 func LoadConfig(filePath string, reporter *TReporter) *TConfigData {
 	var (
-		err        error
-		configData TConfigData
+		err        error       //	Error return value
+		configData TConfigData // The read config data
 	)
 
 	reporter.Progress(1, "Reading config file: %s", filePath)

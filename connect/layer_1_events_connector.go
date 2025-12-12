@@ -58,18 +58,22 @@ type (
  * Defining topic roots and paths
  */
 
+// Get the topic root for the given modelling environment
 func (e *tModellingBusEventsConnector) mqttEnvironmentTopicRoot() string {
 	return e.prefix + "/" + generics.ModellingBusVersion + "/" + e.environmentID
 }
 
+// Get the topic list for the given modelling environment
 func (e *tModellingBusEventsConnector) mqttEnvironmentTopicListFor(environmentID string) string {
 	return e.prefix + "/" + generics.ModellingBusVersion + "/" + environmentID + "/#"
 }
 
+// Get the topic root for the given modelling environment and agent
 func (e *tModellingBusEventsConnector) mqttAgentTopicRootFor(environmentID, agentID string) string {
 	return e.prefix + "/" + generics.ModellingBusVersion + "/" + environmentID + "/" + agentID
 }
 
+// Get the topic path for the given agent and topic path
 func (e *tModellingBusEventsConnector) mqttAgentTopicPath(agentID, topicPath string) string {
 	return e.prefix + "/" + generics.ModellingBusVersion + "/" + e.environmentID + "/" + agentID + "/" + topicPath
 }

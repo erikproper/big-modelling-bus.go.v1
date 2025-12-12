@@ -4,7 +4,7 @@
  * Package:   Connect
  * Component: Layer 1 - Repository Connector
  *
- * This component provides
+ * This component provides the connectivity to the FTP-based repository.
  *
  * Creator: Henderik A. Proper (e.proper@acm.org), TU Wien, Austria
  *
@@ -23,45 +23,65 @@ import (
 	"github.com/secsy/goftp"
 )
 
+/*
+ * Defining the repository connector
+ */
+
 type (
 	tModellingBusRepositoryConnector struct {
-		port,
-		user,
-		server,
-		prefix,
-		agentID,
-		password,
-		environmentID,
-		localWorkDirectory string
+		port, // FTP port
+		user, // FTP user
+		server, // FTP server
+		prefix, // FTP topic prefix
+		agentID, // Agent ID to be used in postings on the FTP repository
+		password, // FTP password
+		environmentID, // Modelling environment ID
+		localWorkDirectory string // Local work directory
 
-		activeTransfers,
-		singleServerMode bool
+		activeTransfers, // Whether to use active transfers for FTP
+		singleServerMode bool // Whether to use a single FTP server for all agents and environments
 
-		createdPaths map[string]bool
+		createdPaths map[string]bool // Paths already created on the FTP server
 
-		reporter *generics.TReporter
+		reporter *generics.TReporter // The Reporter to be used to report progress, error, and panics
 	}
 )
 
+/*
+ * Defining repository events
+ */
+
 type tRepositoryEvent struct {
-	Server    string `json:"server,omitempty"`
-	Port      string `json:"port,omitempty"`
-	FilePath  string `json:"file path,omitempty"`
-	Timestamp string `json:"timestamp"`
+	Server    string `json:"server,omitempty"`    // FTP server for the file
+	Port      string `json:"port,omitempty"`      // FTP port on the FTP server
+	FilePath  string `json:"file path,omitempty"` // Path to the file on the FTP server
+	Timestamp string `json:"timestamp"`           // Timestamp of the event
 }
 
+/*
+ * Defining topic paths and file paths
+ */
+
+// Get the local file path for a given file name
 func (r *tModellingBusRepositoryConnector) localFilePathFor(fileName string) string {
 	return filepath.FromSlash(r.localWorkDirectory + "/" + fileName)
 }
 
+// Get the topic root for the given modelling environment
 func (r *tModellingBusRepositoryConnector) ftpEnvironmentTopicRootFor(environmentID string) string {
 	return r.prefix + "/" + generics.ModellingBusVersion + "/" + environmentID
 }
 
+// Get the topic path for the given agent and topic path
 func (r *tModellingBusRepositoryConnector) ftpTopicPath(topicPath string) string {
 	return r.prefix + "/" + generics.ModellingBusVersion + "/" + r.environmentID + "/" + r.agentID + "/" + topicPath
 }
 
+/*
+ * FTP connection and operations
+ */
+
+// Connecting to the FTP server
 func (r *tModellingBusRepositoryConnector) ftpConnect() (*goftp.Client, error) {
 	config := goftp.Config{}
 	config.User = r.user
