@@ -212,7 +212,7 @@ func (m *TCDMModel) AddRelationTypeReading(relationType string, stringsAndInvolv
  */
 
 // Creating a new CDM model
-func CreateCDMModel(reporter generics.TErrorReporter) TCDMModel {
+func CreateCDMModel(reporter *generics.TReporter) TCDMModel {
 	// Creating the model
 	CDMModel := TCDMModel{}
 	CDMModel.Clean()
@@ -231,7 +231,7 @@ func CreateCDMModel(reporter generics.TErrorReporter) TCDMModel {
  */
 
 // Creating a CDM model poster, which uses a given ModellingBusConnector to post the model
-func CreateCDMPoster(ModellingBusConnector connect.TModellingBusConnector, modelID string, reporter generics.TErrorReporter) TCDMModel {
+func CreateCDMPoster(ModellingBusConnector connect.TModellingBusConnector, modelID string, reporter *generics.TReporter) TCDMModel {
 	// Creating the CDM model poster
 	CDMPosterModel := CreateCDMModel(reporter)
 
