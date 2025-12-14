@@ -279,7 +279,7 @@ func CreateCDMListener(ModellingBusConnector connect.TModellingBusConnector, rep
 	CDMListenerModel := CreateCDMModel(reporter)
 
 	// Connecting it to the bus
-	CDMListenerModel.ModelListener = connect.CreateModellingBusArtefactConnector(ModellingBusConnector, ModelJSONVersion)
+	CDMListenerModel.ModelListener = connect.CreateModellingBusArtefactConnector(ModellingBusConnector, ModelJSONVersion, "")
 
 	// Return the created listener model
 	return CDMListenerModel
