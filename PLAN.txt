@@ -1,3 +1,9 @@
+[ ] Marshall
+
+[ ] Unmarshall
+
+[ ] Document
+
 [ ] Command lines:
 mbus 
   -config <xxx>.ini
@@ -20,15 +26,13 @@ mbus
 
 [ ] bus_listener in GO instead of mosquitto
 
-[ ] foundJSONIssue
-
 [ ] CDM listener and poster as cdm rest repos
 
 [ ] Clean cdm_listener code
 
-[ ] Clean and document code
+[ ] Clean code
 
-[ ] Document, document, document ... + README
+[ ] README
 
 Principles
 - Separation of concerns across layers

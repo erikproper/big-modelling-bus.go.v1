@@ -40,6 +40,15 @@ func (r *TReporter) Error(message string, context ...any) {
 	r.errorReporter(fmt.Sprintf(message, context...))
 }
 
+func (r *TReporter) MaybeReportError(message string, err error) bool {
+	if err != nil {
+		r.Error(message+" %s", err)
+		return false
+	}
+
+	return true
+}
+
 func (r *TReporter) Panic(message string, context ...any) {
 	r.Error(message+" Panicking.", context...)
 

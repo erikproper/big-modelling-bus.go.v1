@@ -93,6 +93,23 @@ func (e *tModellingBusEventsConnector) waitForMQTT() {
 	time.Sleep(time.Duration(e.loadDelay) * time.Second / 1000)
 }
 
+// Report found topics
+func (e *tModellingBusEventsConnector) reportFoundTopics() {
+	// Report found topics
+	if len(e.openingMessages) == 0 {
+		// No topics found
+		e.reporter.Progress(generics.ProgressLevelDetailed, "No topics found.")
+	} else {
+		// Topics found, so let's list them
+		e.reporter.Progress(generics.ProgressLevelDetailed, "Found topic(s):")
+		for topic := range e.openingMessages {
+			if strings.HasPrefix(topic, e.mqttEnvironmentTopicRoot()) {
+				e.reporter.Progress(generics.ProgressLevelDetailed, "- %s", topic)
+			}
+		}
+	}
+}
+
 // Collect all MQTT topics for a given modelling environment
 func (e *tModellingBusEventsConnector) collectTopicsForModellingEnvironment(environmentID string) {
 	token := e.client.Subscribe(e.mqttEnvironmentTopicListFor(environmentID), 0, func(client mqtt.Client, msg mqtt.Message) {
@@ -128,19 +145,8 @@ func (e *tModellingBusEventsConnector) collectTopicsForModellingEnvironment(envi
 	// Wait for a while to allow messages to arrive from the MQTT bus
 	e.waitForMQTT()
 
-	// List found topics
-	if len(e.openingMessages) == 0 {
-		// No topics found
-		e.reporter.Progress(generics.ProgressLevelDetailed, "No topics found.")
-	} else {
-		// Topics found, so let's list them
-		e.reporter.Progress(generics.ProgressLevelDetailed, "Found topic(s):")
-		for topic := range e.openingMessages {
-			if strings.HasPrefix(topic, e.mqttEnvironmentTopicRoot()) {
-				e.reporter.Progress(generics.ProgressLevelDetailed, "- %s", topic)
-			}
-		}
-	}
+	// Report found topics
+	e.reportFoundTopics()
 }
 
 // Connect to the MQTT broker
@@ -206,8 +212,19 @@ func (e *tModellingBusEventsConnector) postMessage(topicPath string, message []b
 
 // Post an event on a given topic path
 func (e *tModellingBusEventsConnector) postEvent(topicPath string, message []byte) {
-	// Posting the event
+	// Posting the event message
 	e.postMessage(e.mqttAgentTopicPath(e.agentID, topicPath), message)
+}
+
+// Post an event on a given topic path, when there was no error
+func (e *tModellingBusEventsConnector) maybePostEvent(topicPath string, eventMessage []byte, errorMessage string, err error) {
+	// Handle potential errors
+	if e.reporter.MaybeReportError(errorMessage, err) {
+		return
+	}
+
+	// Post the event message
+	e.postEvent(topicPath, eventMessage)
 }
 
 /*

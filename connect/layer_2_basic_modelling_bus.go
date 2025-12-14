@@ -63,13 +63,9 @@ func (b *TModellingBusConnector) postFile(topicPath, localFilePath, timestamp st
 
 	// Then convert the event to JSON
 	message, err := json.Marshal(event)
-	if err != nil {
-		b.Reporter.Error("Something went wrong JSONing the link data. %s", err)
-		return
-	}
 
-	// Finally, post the event on the event bus
-	b.modellingBusEventsConnector.postEvent(topicPath, message)
+	// Handle post event, if no error occurred during marshalling
+	b.modellingBusEventsConnector.maybePostEvent(topicPath, message, "Something went wrong JSONing the file link data.", err)
 }
 
 // Posting a JSON message as a file to the repository and announcing it on the event bus
@@ -79,13 +75,9 @@ func (b *TModellingBusConnector) postJSONAsFile(topicPath string, jsonMessage []
 
 	// Then convert the event to JSON
 	message, err := json.Marshal(event)
-	if err != nil {
-		b.Reporter.Error("Something went wrong JSONing the link data. %s", err)
-		return
-	}
 
-	// Finally, post the event on the event bus
-	b.modellingBusEventsConnector.postEvent(topicPath, message)
+	// Handle post event, if no error occurred during marshalling
+	b.modellingBusEventsConnector.maybePostEvent(topicPath, message, "Something went wrong JSONing the file link data.", err)
 }
 
 func (b *TModellingBusConnector) postJSONAsStreamed(topicPath string, jsonMessage []byte, timestamp string) {
@@ -96,13 +88,9 @@ func (b *TModellingBusConnector) postJSONAsStreamed(topicPath string, jsonMessag
 
 	// Convert the event to JSON
 	message, err := json.Marshal(event)
-	if err != nil {
-		b.Reporter.Error("Something went wrong JSONing the event. %s", err)
-		return
-	}
 
-	// Finally, post the event on the event bus
-	b.modellingBusEventsConnector.postEvent(topicPath, message)
+	// Handle post event, if no error occurred during marshalling
+	b.modellingBusEventsConnector.maybePostEvent(topicPath, message, "Something went wrong JSONing the file link data.", err)
 }
 
 /*
@@ -113,8 +101,6 @@ func (b *TModellingBusConnector) postJSONAsStreamed(topicPath string, jsonMessag
 func (b *TModellingBusConnector) getLinkedFileFromRepository(message []byte, localFileName string) (string, string) {
 	// Unmarshal the message to get the repository event
 	event := tRepositoryEvent{}
-
-	// Unmarshal the message
 	err := json.Unmarshal(message, &event)
 	if err == nil {
 		// Retrieve the file from the repository
