@@ -20,7 +20,7 @@ type (
 func NCreateCDMListener(ModellingBusConnector connect.TModellingBusConnector, reporter *generics.TReporter) TCDMModelListener {
 	// Setting up a new CDM model listener
 	cdmModelListener := TCDMModelListener{}
-	cdmModelListener.modelListener = connect.CreateModellingBusArtefactConnector(ModellingBusConnector, ModelJSONVersion, modelID)
+	cdmModelListener.modelListener = connect.CreateModellingBusArtefactConnector(ModellingBusConnector, ModelJSONVersion, "")
 	cdmModelListener.CurrentModel = CreateCDMModel(reporter)
 	cdmModelListener.UpdatedModel = CreateCDMModel(reporter)
 	cdmModelListener.ConsideredModel = CreateCDMModel(reporter)
