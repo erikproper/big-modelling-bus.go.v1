@@ -17,6 +17,30 @@ type (
 	}
 )
 
+func (l *TCDMModelListener) UniteIDSets(mp func(TCDMModel) map[string]bool) map[string]bool {
+	result := map[string]bool{}
+
+	for e, c := range mp(l.CurrentModel) {
+		if c {
+			result[e] = true
+		}
+	}
+
+	for e, c := range mp(l.UpdatedModel) {
+		if c {
+			result[e] = true
+		}
+	}
+
+	for e, c := range mp(l.ConsideredModel) {
+		if c {
+			result[e] = true
+		}
+	}
+
+	return result
+}
+
 func CreateCDMListener(ModellingBusConnector connect.TModellingBusConnector, reporter *generics.TReporter) TCDMModelListener {
 	// Setting up a new CDM model listener
 	cdmModelListener := TCDMModelListener{}
