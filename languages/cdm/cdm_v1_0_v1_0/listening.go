@@ -17,7 +17,7 @@ type (
 	}
 )
 
-func NCreateCDMListener(ModellingBusConnector connect.TModellingBusConnector, reporter *generics.TReporter) TCDMModelListener {
+func CreateCDMListener(ModellingBusConnector connect.TModellingBusConnector, reporter *generics.TReporter) TCDMModelListener {
 	// Setting up a new CDM model listener
 	cdmModelListener := TCDMModelListener{}
 	cdmModelListener.modelListener = connect.CreateModellingBusArtefactConnector(ModellingBusConnector, ModelJSONVersion, "")
