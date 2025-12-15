@@ -7,16 +7,26 @@ import (
 	"github.com/erikproper/big-modelling-bus.go.v1/generics"
 )
 
-// Creating a CDM model listener, which uses a given ModellingBusConnector to listen for models and their updates
-func CreateCDMListener(ModellingBusConnector connect.TModellingBusConnector, reporter *generics.TReporter) TCDMModel {
-	// Creating the CDM listener model
-	CDMListenerModel := CreateCDMModel(reporter)
+type (
+	TCDMModelListener struct {
+		modelListener connect.TModellingBusArtefactConnector
 
-	// Connecting it to the bus
-	CDMListenerModel.ModelListener = connect.CreateModellingBusArtefactConnector(ModellingBusConnector, ModelJSONVersion, "")
+		CurrentModel    TCDMModel
+		UpdatedModel    TCDMModel
+		ConsideredModel TCDMModel
+	}
+)
 
-	// Return the created listener model
-	return CDMListenerModel
+func NCreateCDMListener(ModellingBusConnector connect.TModellingBusConnector, reporter *generics.TReporter) TCDMModelListener {
+	// Setting up a new CDM model listener
+	cdmModelListener := TCDMModelListener{}
+	cdmModelListener.modelListener = connect.CreateModellingBusArtefactConnector(ModellingBusConnector, ModelJSONVersion, modelID)
+	cdmModelListener.CurrentModel = CreateCDMModel(reporter)
+	cdmModelListener.UpdatedModel = CreateCDMModel(reporter)
+	cdmModelListener.ConsideredModel = CreateCDMModel(reporter)
+
+	// Return the created CDM model listener
+	return cdmModelListener
 }
 
 // Updating the model's state from given JSON
