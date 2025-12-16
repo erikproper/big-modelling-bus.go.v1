@@ -29,6 +29,7 @@ type (
 
 // Posting the model's state
 func (p *TCDMModelPoster) PostState(m TCDMModel) {
+	p.modelPoster.ModellingBusConnector.Reporter.Progress(1, "Posting model state for model %s", m.ModelName)
 	p.modelPoster.PostJSONArtefactState(m.GetModelAsJSON())
 }
 
