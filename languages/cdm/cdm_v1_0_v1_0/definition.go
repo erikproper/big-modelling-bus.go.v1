@@ -84,13 +84,14 @@ type (
 func (m *TCDMModel) GetModelAsJSON() (json.RawMessage, bool) {
 	json, err := json.Marshal(m)
 
-	return json, m.reporter.MaybeReportError("Something went wrong when converting to JSON.", err)
+	return json, !m.reporter.MaybeReportError("Something went wrong when converting model to JSON.", err)
 }
 
 func (m *TCDMModel) SetModelFromJSON(modelJSON json.RawMessage) bool {
 	m.Clean()
+	err := json.Unmarshal(modelJSON, m)
 
-	return m.reporter.MaybeReportError("Unmarshalling state content failed.", json.Unmarshal(modelJSON, m))
+	return !m.reporter.MaybeReportError("Something went wrong when converting JSON to model.", err)
 }
 
 /*
