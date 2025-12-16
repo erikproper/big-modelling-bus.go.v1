@@ -47,8 +47,6 @@ func (l *TCDMModelListener) UpdateModelsFromBus() {
 	l.ConsideredModel.SetModelFromJSON(l.ModelListener.ConsideredContent)
 }
 
-// // HERE
-
 // Listening for model state postings on the modelling bus
 func (l *TCDMModelListener) ListenForModelStatePostings(agentID, modelID string, handler func()) {
 	l.ModelListener.ModellingBusConnector.Reporter.Progress(1, "Listening for model state postings for model %s from agent %s", modelID, agentID)

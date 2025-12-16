@@ -27,7 +27,10 @@ import (
  */
 
 const (
-	ModelJSONVersion = "cdm-v1.0-v1.0"
+	// The JSON version identifier for CDM models:
+	// - Meta model version 1.0
+	// - JSON version 1.0
+	ModelJSONVersion = "cdm-v1.0-v1.0" // The JSON version identifier for CDM v1.0-v1.0 models
 )
 
 /*
@@ -78,15 +81,23 @@ type (
 )
 
 /*
- * Convereting JSON to models and back
+ * Converting JSON to models and back
  */
 
+// Converting the model to JSON
 func (m *TCDMModel) GetModelAsJSON() (json.RawMessage, bool) {
+	// Converting the model to JSON
 	json, err := json.Marshal(m)
 
-	return json, !m.reporter.MaybeReportError("Something went wrong when converting model to JSON.", err)
+	// Handle potential errors
+	if m.reporter.MaybeReportError("Something went wrong when converting model to JSON.", err) {
+		return []byte{}, false
+	}
+
+	return json, true
 }
 
+// Converting the JSON to the model
 func (m *TCDMModel) SetModelFromJSON(modelJSON json.RawMessage) bool {
 	m.Clean()
 	err := json.Unmarshal(modelJSON, m)

@@ -23,14 +23,12 @@ import (
 // Posting functionalities for the CDM model
 type (
 	TCDMModelPoster struct {
-		modelPoster connect.TModellingBusArtefactConnector // ???
+		modelPoster connect.TModellingBusArtefactConnector
 	}
 )
 
 // Posting the model's state
 func (p *TCDMModelPoster) PostState(m TCDMModel) {
-	jj, _ := m.GetModelAsJSON()
-	p.modelPoster.ModellingBusConnector.Reporter.Progress(1, "XXXX Posting model state for model %s as %s", m.ModelName, jj)
 	p.modelPoster.PostJSONArtefactState(m.GetModelAsJSON())
 }
 
