@@ -207,6 +207,8 @@ func (b *TModellingBusArtefactConnector) PostJSONArtefactState(stateJSON []byte,
 		return
 	}
 
+	b.ModellingBusConnector.Reporter.Progress(1, "XXX Hello %s", string(stateJSON))
+
 	// Post the JSON artefact state
 	b.CurrentTimestamp = generics.GetTimestamp()
 	b.CurrentContent = stateJSON
