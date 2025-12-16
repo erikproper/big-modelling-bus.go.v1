@@ -203,6 +203,7 @@ func (b *TModellingBusArtefactConnector) PostRawArtefactState(topicPath, localFi
 // Posting JSON artefact state
 func (b *TModellingBusArtefactConnector) PostJSONArtefactState(stateJSON []byte, okJSONing bool) {
 	// If not ok, then do not proceed
+	b.ModellingBusConnector.Reporter.Progress(1, "XXX Hello %s", string(stateJSON))
 	if !okJSONing {
 		return
 	}
