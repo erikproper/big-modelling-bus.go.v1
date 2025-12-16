@@ -102,7 +102,12 @@ func (m *TCDMModel) SetModelFromJSON(modelJSON json.RawMessage) bool {
 	m.Clean()
 	err := json.Unmarshal(modelJSON, m)
 
-	return !m.reporter.MaybeReportError("Something went wrong when converting JSON to model.", err)
+	// Handle potential errors
+	if m.reporter.MaybeReportError("Something went wrong when converting JSON to model.", err) {
+		return false
+	}
+
+	return true
 }
 
 /*

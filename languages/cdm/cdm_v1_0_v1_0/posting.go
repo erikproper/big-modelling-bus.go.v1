@@ -20,12 +20,19 @@ import (
 	"github.com/erikproper/big-modelling-bus.go.v1/connect"
 )
 
-// Posting functionalities for the CDM model
+/*
+ * Definition of the CDM model listener
+ */
+
 type (
 	TCDMModelPoster struct {
 		modelPoster connect.TModellingBusArtefactConnector
 	}
 )
+
+/*
+ * Posting models to the modelling bus
+ */
 
 // Posting the model's state
 func (p *TCDMModelPoster) PostState(m TCDMModel) {
@@ -41,6 +48,10 @@ func (p *TCDMModelPoster) PostUpdate(m TCDMModel) {
 func (p *TCDMModelPoster) PostConsidering(m TCDMModel) {
 	p.modelPoster.PostJSONArtefactConsidering(m.GetModelAsJSON())
 }
+
+/*
+ *  Creating the model poster
+ */
 
 // Creating a CDM model poster, which uses a given ModellingBusConnector to post the model
 func CreateCDMPoster(ModellingBusConnector connect.TModellingBusConnector, modelID string) TCDMModelPoster {

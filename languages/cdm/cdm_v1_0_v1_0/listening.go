@@ -49,7 +49,7 @@ func (l *TCDMModelListener) UpdateModelsFromBus() {
 
 // Listening for model state postings on the modelling bus
 func (l *TCDMModelListener) ListenForModelStatePostings(agentID, modelID string, handler func()) {
-	l.ModelListener.ModellingBusConnector.Reporter.Progress(1, "Listening for model state postings for model %s from agent %s", modelID, agentID)
+	// Setting up listening for model state postings
 	l.ModelListener.ListenForJSONArtefactStatePostings(agentID, modelID, func() {
 		l.UpdateModelsFromBus()
 		handler()
@@ -58,6 +58,7 @@ func (l *TCDMModelListener) ListenForModelStatePostings(agentID, modelID string,
 
 // Listening for model update postings on the modelling bus
 func (l *TCDMModelListener) ListenForModelUpdatePostings(agentID, modelID string, handler func()) {
+	// Setting up listening for model update postings
 	l.ModelListener.ListenForJSONArtefactUpdatePostings(agentID, modelID, func() {
 		l.UpdateModelsFromBus()
 		handler()
@@ -66,6 +67,7 @@ func (l *TCDMModelListener) ListenForModelUpdatePostings(agentID, modelID string
 
 // Listening for model considering postings on the modelling bus
 func (l *TCDMModelListener) ListenForModelConsideringPostings(agentID, modelID string, handler func()) {
+	// Setting up listening for model considering postings
 	l.ModelListener.ListenForJSONArtefactConsideringPostings(agentID, modelID, func() {
 		l.UpdateModelsFromBus()
 		handler()
@@ -77,54 +79,64 @@ func (l *TCDMModelListener) ListenForModelConsideringPostings(agentID, modelID s
  */
 
 func (l *TCDMModelListener) UniteIDSets(mp func(TCDMModel) map[string]bool) map[string]bool {
+	// Start with an empty result set
 	result := map[string]bool{}
 
+	// Collecting IDs from the current model
 	for e, c := range mp(l.CurrentModel) {
 		if c {
 			result[e] = true
 		}
 	}
 
+	// Collecting IDs from the updated model
 	for e, c := range mp(l.UpdatedModel) {
 		if c {
 			result[e] = true
 		}
 	}
 
+	// Collecting IDs from the considered model
 	for e, c := range mp(l.ConsideredModel) {
 		if c {
 			result[e] = true
 		}
 	}
 
+	// Return the collected result
 	return result
 }
 
 func (l *TCDMModelListener) QualityTypes() map[string]bool {
+	// Unite the quality types across the models
 	return l.UniteIDSets(func(m TCDMModel) map[string]bool {
 		return m.QualityTypes
 	})
 }
 
 func (l *TCDMModelListener) ConcreteIndividualTypes() map[string]bool {
+	// Unite the concrete individual types across the models
 	return l.UniteIDSets(func(m TCDMModel) map[string]bool {
 		return m.ConcreteIndividualTypes
 	})
 }
 
 func (l *TCDMModelListener) RelationTypes() map[string]bool {
+	// Unite the relation types across the models
 	return l.UniteIDSets(func(m TCDMModel) map[string]bool {
 		return m.RelationTypes
 	})
 }
 
 func (l *TCDMModelListener) InvolvementTypesOfRelationType(relationType string) map[string]bool {
+	// Unite the involvement types of the given relation type across the models
 	return l.UniteIDSets(func(m TCDMModel) map[string]bool {
 		return m.InvolvementTypesOfRelationType[relationType]
 	})
 }
 
 func (l *TCDMModelListener) AlternativeReadingsOfRelationType(relationType string) map[string]bool {
+	// Unite the alternative readings of the given relation type across the models
 	return l.UniteIDSets(func(m TCDMModel) map[string]bool {
 		return m.AlternativeReadingsOfRelationType[relationType]
 	})
