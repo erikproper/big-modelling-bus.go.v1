@@ -17,8 +17,6 @@
 package cdm_v1_0_v1_0
 
 import (
-	"encoding/json"
-
 	"github.com/erikproper/big-modelling-bus.go.v1/connect"
 )
 
@@ -31,17 +29,17 @@ type (
 
 // Posting the model's state
 func (p *TCDMModelPoster) PostState(m TCDMModel) {
-	p.modelPoster.PostJSONArtefactState(json.Marshal(m))
+	p.modelPoster.PostJSONArtefactState(m.GetModelAsJSON())
 }
 
 // Posting the model's update
 func (p *TCDMModelPoster) PostUpdate(m TCDMModel) {
-	p.modelPoster.PostJSONArtefactUpdate(json.Marshal(m))
+	p.modelPoster.PostJSONArtefactUpdate(m.GetModelAsJSON())
 }
 
 // Posting the model's considered update
 func (p *TCDMModelPoster) PostConsidering(m TCDMModel) {
-	p.modelPoster.PostJSONArtefactConsidering(json.Marshal(m))
+	p.modelPoster.PostJSONArtefactConsidering(m.GetModelAsJSON())
 }
 
 // Creating a CDM model poster, which uses a given ModellingBusConnector to post the model

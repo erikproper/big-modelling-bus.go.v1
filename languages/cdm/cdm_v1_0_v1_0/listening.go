@@ -18,8 +18,6 @@
 package cdm_v1_0_v1_0
 
 import (
-	"encoding/json"
-
 	"github.com/erikproper/big-modelling-bus.go.v1/connect"
 	"github.com/erikproper/big-modelling-bus.go.v1/generics"
 )
@@ -42,18 +40,14 @@ type (
  * Getting model versions from the modelling bus
  */
 
-func (m *TCDMModel) UpdateModelFromJSON(modelJSON json.RawMessage) bool {
-	m.Clean()
-
-	return m.reporter.MaybeReportError("Unmarshalling state content failed.", json.Unmarshal(modelJSON, m))
-}
-
 // Updating all models from the modelling bus
 func (l *TCDMModelListener) UpdateModelsFromBus() {
-	l.CurrentModel.UpdateModelFromJSON(l.ModelListener.CurrentContent)
-	l.UpdatedModel.UpdateModelFromJSON(l.ModelListener.UpdatedContent)
-	l.ConsideredModel.UpdateModelFromJSON(l.ModelListener.ConsideredContent)
+	l.CurrentModel.SetModelFromJSON(l.ModelListener.CurrentContent)
+	l.UpdatedModel.SetModelFromJSON(l.ModelListener.UpdatedContent)
+	l.ConsideredModel.SetModelFromJSON(l.ModelListener.ConsideredContent)
 }
+
+// // HERE
 
 // Listening for model state postings on the modelling bus
 func (l *TCDMModelListener) LListenForModelStatePostings(agentId, modelID string, handler func()) {
