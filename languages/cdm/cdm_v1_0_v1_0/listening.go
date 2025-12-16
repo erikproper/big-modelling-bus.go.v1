@@ -1,3 +1,20 @@
+/*
+ *
+ * Module:    BIG Modelling Bus
+ * Package:   Languages/Conceptual Domain Modelling, Version 1
+ * Component: Definition
+ *
+ * This component provides the functionality fto listen for updates of
+ * models expressed in the
+ *    Conceptual Domain Modelling language, Version 1,
+ * on the BIG Modelling Bus.
+ *
+ * Creator: Henderik A. Proper (e.proper@acm.org), TU Wien, Austria
+ *
+ * Version of: 15.12.2025
+ *
+ */
+
 package cdm_v1_0_v1_0
 
 import (
@@ -6,6 +23,10 @@ import (
 	"github.com/erikproper/big-modelling-bus.go.v1/connect"
 	"github.com/erikproper/big-modelling-bus.go.v1/generics"
 )
+
+/*
+ * Definition of the CDM model listener
+ */
 
 type (
 	TCDMModelListener struct {
@@ -17,11 +38,65 @@ type (
 	}
 )
 
-func (l *TCDMModelListener) UpdateModelsFromBus() {
-	l.CurrentModel.GetStateFromBus(l.ModelListener)
-	l.UpdatedModel.GetUpdatedFromBus(l.ModelListener)
-	l.ConsideredModel.GetConsideredFromBus(l.ModelListener)
+/*
+ * Getting model versions from the modelling bus
+ */
+
+func (m *TCDMModel) UpdateModelFromJSON(modelJSON json.RawMessage) bool {
+	m.Clean()
+
+	return m.reporter.MaybeReportError("Unmarshalling state content failed.", json.Unmarshal(modelJSON, m))
 }
+
+// Updating all models from the modelling bus
+func (l *TCDMModelListener) UpdateModelsFromBus() {
+	l.CurrentModel.UpdateModelFromJSON(l.ModelListener.CurrentContent)
+	l.UpdatedModel.UpdateModelFromJSON(l.ModelListener.UpdatedContent)
+	l.ConsideredModel.UpdateModelFromJSON(l.ModelListener.ConsideredContent)
+}
+
+// Listening for model state postings on the modelling bus
+func (l *TCDMModelListener) LListenForModelStatePostings(agentId, modelID string, handler func()) {
+	l.ModelListener.ListenForJSONArtefactStatePostings(agentId, modelID, func() {
+		l.UpdateModelsFromBus()
+		handler()
+	})
+}
+
+// Listening for model update postings on the modelling bus
+func (l *TCDMModelListener) LListenForModelUpdatePostings(agentId, modelID string, handler func()) {
+	l.ModelListener.ListenForJSONArtefactUpdatePostings(agentId, modelID, func() {
+		l.UpdateModelsFromBus()
+		handler()
+	})
+}
+
+// Listening for model considering postings on the modelling bus
+func (l *TCDMModelListener) LListenForModelConsideringPostings(agentId, modelID string, handler func()) {
+	l.ModelListener.ListenForJSONArtefactConsideringPostings(agentId, modelID, func() {
+		l.UpdateModelsFromBus()
+		handler()
+	})
+}
+
+// Listening for model state postings on the modelling bus
+func (m *TCDMModel) ListenForModelStatePostings(agentId, modelID string, handler func()) {
+	m.ModelListener.ListenForJSONArtefactStatePostings(agentId, modelID, handler)
+}
+
+// Listening for model update postings on the modelling bus
+func (m *TCDMModel) ListenForModelUpdatePostings(agentId, modelID string, handler func()) {
+	m.ModelListener.ListenForJSONArtefactUpdatePostings(agentId, modelID, handler)
+}
+
+// Listening for model update postings on the modelling bus
+func (m *TCDMModel) ListenForModelConsideringPostings(agentId, modelID string, handler func()) {
+	m.ModelListener.ListenForJSONArtefactConsideringPostings(agentId, modelID, handler)
+}
+
+/*
+ *  Aggregate data across the model versions
+ */
 
 func (l *TCDMModelListener) UniteIDSets(mp func(TCDMModel) map[string]bool) map[string]bool {
 	result := map[string]bool{}
@@ -46,10 +121,6 @@ func (l *TCDMModelListener) UniteIDSets(mp func(TCDMModel) map[string]bool) map[
 
 	return result
 }
-
-/*
- *  Aggregate data across the model versions
- */
 
 func (l *TCDMModelListener) QualityTypes() map[string]bool {
 	return l.UniteIDSets(func(m TCDMModel) map[string]bool {
@@ -96,41 +167,4 @@ func CreateCDMListener(ModellingBusConnector connect.TModellingBusConnector, rep
 
 	// Return the created CDM model listener
 	return cdmModelListener
-}
-
-// Updating the model's state from given JSON
-func (m *TCDMModel) UpdateModelFromJSON(modelJSON json.RawMessage) bool {
-	m.Clean()
-
-	return m.reporter.MaybeReportError("Unmarshalling state content failed.", json.Unmarshal(modelJSON, m))
-}
-
-// Listening for model state postings on the modelling bus
-func (m *TCDMModel) ListenForModelStatePostings(agentId, modelID string, handler func()) {
-	m.ModelListener.ListenForJSONArtefactStatePostings(agentId, modelID, handler)
-}
-
-// Listening for model update postings on the modelling bus
-func (m *TCDMModel) ListenForModelUpdatePostings(agentId, modelID string, handler func()) {
-	m.ModelListener.ListenForJSONArtefactUpdatePostings(agentId, modelID, handler)
-}
-
-// Listening for model update postings on the modelling bus
-func (m *TCDMModel) ListenForModelConsideringPostings(agentId, modelID string, handler func()) {
-	m.ModelListener.ListenForJSONArtefactConsideringPostings(agentId, modelID, handler)
-}
-
-// Retrieving the model's state from the modelling bus
-func (m *TCDMModel) GetStateFromBus(artefactBus connect.TModellingBusArtefactConnector) bool {
-	return m.UpdateModelFromJSON(artefactBus.CurrentContent)
-}
-
-// Retrieving the model's updated state from the modelling bus
-func (m *TCDMModel) GetUpdatedFromBus(artefactBus connect.TModellingBusArtefactConnector) bool {
-	return m.UpdateModelFromJSON(artefactBus.UpdatedContent)
-}
-
-// Retrieving the model's considered state from the modelling bus
-func (m *TCDMModel) GetConsideredFromBus(artefactBus connect.TModellingBusArtefactConnector) bool {
-	return m.UpdateModelFromJSON(artefactBus.ConsideredContent)
 }

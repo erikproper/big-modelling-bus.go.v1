@@ -184,11 +184,6 @@ func (b *TModellingBusArtefactConnector) updateConsideringJSONArtefact(json []by
 	return ok
 }
 
-// Checking for JSON issues
-func (b *TModellingBusArtefactConnector) checkArtefactJSONIssue(err error) bool {
-	return b.ModellingBusConnector.Reporter.MaybeReportError("Something went wrong when converting to JSON.", err)
-}
-
 /*
  *
  * Externally visible functionality
@@ -199,12 +194,6 @@ func (b *TModellingBusArtefactConnector) checkArtefactJSONIssue(err error) bool 
  * Posting artefacts
  */
 
-// Preparing for posting artefacts
-//func (b *TModellingBusArtefactConnector) PrepareForPosting(ArtefactID string) {
-//	// Set the artefact ID
-//	b.ArtefactID = ArtefactID
-//}
-
 // Posting raw artefact state
 func (b *TModellingBusArtefactConnector) PostRawArtefactState(topicPath, localFilePath string) {
 	// Post the raw artefact state
@@ -212,9 +201,9 @@ func (b *TModellingBusArtefactConnector) PostRawArtefactState(topicPath, localFi
 }
 
 // Posting JSON artefact state
-func (b *TModellingBusArtefactConnector) PostJSONArtefactState(stateJSON []byte, err error) {
-	// Check for errors
-	if b.checkArtefactJSONIssue(err) {
+func (b *TModellingBusArtefactConnector) PostJSONArtefactState(stateJSON []byte, okJSONing bool) {
+	// If not ok, then do not proceed
+	if !okJSONing {
 		return
 	}
 
@@ -230,15 +219,15 @@ func (b *TModellingBusArtefactConnector) PostJSONArtefactState(stateJSON []byte,
 }
 
 // Posting JSON artefact update
-func (b *TModellingBusArtefactConnector) PostJSONArtefactUpdate(updatedStateJSON []byte, err error) {
-	// Check for errors
-	if b.checkArtefactJSONIssue(err) {
+func (b *TModellingBusArtefactConnector) PostJSONArtefactUpdate(updatedStateJSON []byte, okJSONing bool) {
+	// If not ok, then do not proceed
+	if !okJSONing {
 		return
 	}
 
 	// Ensure the state has been communicated
 	if !b.stateCommunicated {
-		b.PostJSONArtefactState(updatedStateJSON, nil)
+		b.PostJSONArtefactState(updatedStateJSON, okJSONing)
 	}
 
 	// Post the JSON artefact update
@@ -248,15 +237,15 @@ func (b *TModellingBusArtefactConnector) PostJSONArtefactUpdate(updatedStateJSON
 }
 
 // Posting JSON considered artefact
-func (b *TModellingBusArtefactConnector) PostJSONArtefactConsidering(consideringStateJSON []byte, err error) {
-	// Check for errors
-	if b.checkArtefactJSONIssue(err) {
+func (b *TModellingBusArtefactConnector) PostJSONArtefactConsidering(consideringStateJSON []byte, okJSONing bool) {
+	// If not ok, then do not proceed
+	if !okJSONing {
 		return
 	}
 
 	// Ensure the state has been communicated
 	if !b.stateCommunicated {
-		b.PostJSONArtefactState(b.CurrentContent, nil)
+		b.PostJSONArtefactState(b.CurrentContent, okJSONing)
 	}
 
 	// Post the JSON considered artefact

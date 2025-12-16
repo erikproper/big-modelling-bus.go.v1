@@ -4,17 +4,20 @@
  * Package:   Languages/Conceptual Domain Modelling, Version 1
  * Component: Definition
  *
- * This package implements the Conceptual Domain Modelling language, version 1, for the BIG Modelling Bus.
+ * This component provides the core fefinitions of the
+ *    Conceptual Domain Modelling language, Version 1
  *
  * Creator: Henderik A. Proper (e.proper@acm.org), TU Wien, Austria
  *
- * Version of: XX.11.2025
+ * Version of: 15.12.2025
  *
  */
 
 package cdm_v1_0_v1_0
 
 import (
+	"encoding/json"
+
 	"github.com/erikproper/big-modelling-bus.go.v1/connect"
 	"github.com/erikproper/big-modelling-bus.go.v1/generics"
 )
@@ -75,9 +78,23 @@ type (
 )
 
 /*
- *
+ * Convereting JSON to models and back
+ */
+
+func (m *TCDMModel) GetModelAsJSON() (json.RawMessage, bool) {
+	json, err := json.Marshal(m)
+
+	return json, m.reporter.MaybeReportError("Something went wrong when converting to JSON.", err)
+}
+
+func (m *TCDMModel) SetModelFromJSON(modelJSON json.RawMessage) bool {
+	m.Clean()
+
+	return m.reporter.MaybeReportError("Unmarshalling state content failed.", json.Unmarshal(modelJSON, m))
+}
+
+/*
  * Functionality related to the CDM model
- *
  */
 
 // Generating a new element ID
@@ -191,9 +208,7 @@ func (m *TCDMModel) AddRelationTypeReading(relationType string, stringsAndInvolv
 }
 
 /*
- *
- * Creation & initialisation
- *
+ * Creating & cleaning CDM models
  */
 
 // Cleaning a CDM model
@@ -216,7 +231,7 @@ func (m *TCDMModel) Clean() {
 
 // Creating a new CDM model
 func CreateCDMModel(reporter *generics.TReporter) TCDMModel {
-	// Creating the model
+	// Create an empty CDM model
 	CDMModel := TCDMModel{}
 	CDMModel.Clean()
 

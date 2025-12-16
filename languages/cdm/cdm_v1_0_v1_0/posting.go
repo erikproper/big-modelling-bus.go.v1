@@ -4,11 +4,13 @@
  * Package:   Languages/Conceptual Domain Modelling, Version 1
  * Component: Definition
  *
- * This package implements the Conceptual Domain Modelling language, version 1, for the BIG Modelling Bus.
+ * This component provides the functionality for models expressed in the
+ *    Conceptual Domain Modelling language, Version 1,
+ * to be posted on he BIG Modelling Bus.
  *
  * Creator: Henderik A. Proper (e.proper@acm.org), TU Wien, Austria
  *
- * Version of: XX.11.2025
+ * Version of: 15.12.2025
  *
  */
 
@@ -20,6 +22,7 @@ import (
 	"github.com/erikproper/big-modelling-bus.go.v1/connect"
 )
 
+// Posting functionalities for the CDM model
 type (
 	TCDMModelPoster struct {
 		modelPoster connect.TModellingBusArtefactConnector // ???
