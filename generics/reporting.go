@@ -55,7 +55,8 @@ func (r *TReporter) Error(message string, context ...any) {
 
 // Reporting an error with an error value
 func (r *TReporter) ReportError(message string, err error) {
-	r.Error(message+" %s", err)
+	r.Error(message)
+	r.Error("=> %s", err)
 }
 
 // Reporting an error if the error value is not nil
