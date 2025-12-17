@@ -93,7 +93,7 @@ func (r *TReporter) Panic(message string, context ...any) {
 
 // Panicking with an error message and an error value
 func (r *TReporter) PanicError(message string, err error) {
-	r.ReportError(message+" Panicking.", err)
+	r.ReportError(message+" Panicking:", err)
 
 	panic("")
 }
