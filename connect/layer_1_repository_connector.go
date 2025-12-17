@@ -219,10 +219,12 @@ func (r *tModellingBusRepositoryConnector) addJSONAsFile(topicPath string, json 
 	// Define the temporary local file path
 	localFilePath := r.localFilePathFor(generics.JSONFileName)
 
+	// Validate that the content is a valid JSON
 	if !generics.IsJSON(json) {
-		r.reporter.Report("Provided content is not a valid JSON.")
+		r.reporter.Error("Provided content is not a valid JSON.")
 		return tRepositoryEvent{}
 	}
+
 	// Create a temporary local file with the JSON record
 	if err := os.WriteFile(localFilePath, json, 0644); err != nil {
 		r.reporter.ReportError("Error writing to temporary file.", err)
