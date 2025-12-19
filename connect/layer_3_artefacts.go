@@ -301,9 +301,9 @@ func (b *TModellingBusArtefactConnector) ListenForJSONArtefactConsideringPosting
  */
 
 // Getting raw artefact state
-func (b *TModellingBusArtefactConnector) GetRawArtefactState(agentID, topicPath, localFileName string) (string, string) {
+func (b *TModellingBusArtefactConnector) GetRawArtefactState(agentID, artefactID, localFileName string) (string, string) {
 	// Get the raw artefact state
-	return b.ModellingBusConnector.getFileFromPosting(agentID, topicPath, localFileName)
+	return b.ModellingBusConnector.getFileFromPosting(agentID, b.rawArtefactsTopicPath(artefactID), localFileName)
 }
 
 // Getting JSON artefact state
