@@ -115,6 +115,7 @@ func (e *tModellingBusEventsConnector) reportFoundTopics() {
 
 // Collect all MQTT topics for a given modelling environment
 func (e *tModellingBusEventsConnector) collectTopicsForModellingEnvironment(environmentID string) {
+	e.reporter.Progress(generics.ProgressLevelDetailed, "Collecting topics for modelling environment: %s", environmentID)
 	token := e.client.Subscribe(e.mqttEnvironmentTopicListFor(environmentID), 0, func(client mqtt.Client, msg mqtt.Message) {
 		// Get topic and payload
 		topic := msg.Topic()
