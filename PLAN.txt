@@ -1,9 +1,6 @@
-[ ] Command lines:
-  -delete_experiment <e>
-  -delete
-  other deletes 
+[ ] Command line ... get/
 
-[ ] Command line ... get/listen 
+[ ] listen 
   -get_raw_artefact     <local_file>
   -get_json_artefact    [<file_name>]
 
@@ -14,6 +11,9 @@
   -listen_coordination  [<file_name>] [-repeat]
 
 [ ] bus_listener in GO instead of mosquitto
+
+[ ] Check cmd ones for optimal flag checking
+
 
 [ ] Code review
 
