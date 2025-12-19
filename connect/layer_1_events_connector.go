@@ -242,16 +242,12 @@ func (e *tModellingBusEventsConnector) messageFromEvent(agentID, topicPath strin
 	// Getting the message
 	message := e.currentMessages[mqttTopicPath]
 
-	e.reporter.Progress(generics.ProgressLevelDetailed, "XXXX Pro-actively retrieved message from topic path '%s': %s", mqttTopicPath, string(message))
-
 	// When messageFromEvent is called too soon after opening the connection to the MQTT broker,
 	// we may not have received a message yet. So, we need to be "waitForMQTT" patient.
 	if len(message) == 0 {
 		e.waitForMQTT()
 		message = e.currentMessages[mqttTopicPath]
 	}
-
-	e.reporter.Progress(generics.ProgressLevelDetailed, "XXXX Pro-actively retrieved message from topic path '%s': %s", mqttTopicPath, string(message))
 
 	return message
 }
