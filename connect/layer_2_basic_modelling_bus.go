@@ -93,7 +93,7 @@ func (b *TModellingBusConnector) maybePostJSONAsFile(topicPath string, jsonMessa
 }
 
 // Posting a JSON message as a streamed event on the modelling bus
-func (b *TModellingBusConnector) postJSONAsStreamed(topicPath string, jsonMessage []byte, timestamp string) {
+func (b *TModellingBusConnector) postJSONAsStreamed(agentID, topicPath string, jsonMessage []byte, timestamp string) {
 	// Create the streamed event
 	event := tStreamedEvent{}
 	event.Timestamp = timestamp
@@ -103,7 +103,7 @@ func (b *TModellingBusConnector) postJSONAsStreamed(topicPath string, jsonMessag
 	message, err := json.Marshal(event)
 
 	// Post the event, if no error occurred during marshalling
-	b.modellingBusEventsConnector.maybePostEvent(topicPath, message, "Something went wrong JSONing the file link data:", err)
+	b.modellingBusEventsConnector.maybePostTargetedEvent(agentID, topicPath, message, "Something went wrong JSONing the file link data:", err)
 }
 
 /*
@@ -129,10 +129,15 @@ func (b *TModellingBusConnector) getLinkedFileFromRepository(message []byte, loc
 	return b.modellingBusRepositoryConnector.getFile(event, localFileName), event.Timestamp
 }
 
+func (b *TModellingBusConnector) getFileFromMessage(message []byte, localFileName string) (string, string) {
+	// Retrieve the file, as referred to in the message, from the repository
+	return b.getLinkedFileFromRepository(message, localFileName)
+}
+
 // Get a linked file from a posting on the modelling bus
 func (b *TModellingBusConnector) getFileFromPosting(agentID, topicPath, localFileName string) (string, string) {
 	// Get the message from the modelling bus, and retrieve the file from the repository
-	return b.getLinkedFileFromRepository(b.modellingBusEventsConnector.messageFromEvent(agentID, topicPath), localFileName)
+	return b.getFileFromMessage(b.modellingBusEventsConnector.messageFromEvent(agentID, topicPath), localFileName)
 }
 
 // Get JSON from a temporary file

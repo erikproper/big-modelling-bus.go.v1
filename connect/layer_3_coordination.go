@@ -44,8 +44,8 @@ func (b *TModellingBusConnector) coordinationTopicPath(coordinationID string) st
  */
 
 // Post a coordination message to the modelling bus
-func (b *TModellingBusConnector) PostCoordination(coordinationID string, json []byte) {
-	b.postJSONAsStreamed(b.coordinationTopicPath(coordinationID), json, generics.GetTimestamp())
+func (b *TModellingBusConnector) PostCoordination(agentID, coordinationID string, json []byte) {
+	b.postJSONAsStreamed(agentID, b.coordinationTopicPath(coordinationID), json, generics.GetTimestamp())
 }
 
 /*
@@ -53,8 +53,8 @@ func (b *TModellingBusConnector) PostCoordination(coordinationID string, json []
  */
 
 // Listen for coordination postings on the modelling bus
-func (b *TModellingBusConnector) ListenForCoordinationPostings(agentID, coordinationID string, postingHandler func([]byte, string)) {
-	b.listenForStreamedPostings(agentID, b.coordinationTopicPath(coordinationID), postingHandler)
+func (b *TModellingBusConnector) ListenForCoordinationPostings(coordinationID string, postingHandler func([]byte, string)) {
+	b.listenForStreamedPostings(b.agentID, b.coordinationTopicPath(coordinationID), postingHandler)
 }
 
 /*
@@ -62,8 +62,8 @@ func (b *TModellingBusConnector) ListenForCoordinationPostings(agentID, coordina
  */
 
 // Retrieve coordination messages from the modelling bus
-func (b *TModellingBusConnector) GetCoordination(agentID, coordinationID string) ([]byte, string) {
-	return b.getStreamedEvent(agentID, b.coordinationTopicPath(coordinationID))
+func (b *TModellingBusConnector) GetCoordination(coordinationID string) ([]byte, string) {
+	return b.getStreamedEvent(b.agentID, b.coordinationTopicPath(coordinationID))
 }
 
 /*

@@ -21,6 +21,6 @@ package generics
 const (
 	ModellingBusVersion = "bus-version-1.0"         // The current version of the BIG modelling bus.
 	PayloadFileName     = "payload"                 // Name of the file used to store the "payload" of artefacts on the FTP server.
-	JSONExtension       = ".json"                   // Name of the local file used to (temporarily) represent upload/downloaded JSONs.
+	JSONExtension       = ".json"                   // Extension for JSON files
 	JSONFileName        = "message" + JSONExtension // Name of the local file used to (temporarily) represent upload/downloaded JSONs.
 )

@@ -213,11 +213,21 @@ func (e *tModellingBusEventsConnector) postMessage(topicPath string, message []b
 	token.Wait()
 }
 
+///// ALL needed??
+
+// Post an event on a given topic path
+func (e *tModellingBusEventsConnector) postTargetedEvent(agentID, topicPath string, message []byte) {
+	// Posting the event message
+	e.postMessage(e.mqttAgentTopicPath(agentID, topicPath), message)
+}
+
 // Post an event on a given topic path
 func (e *tModellingBusEventsConnector) postEvent(topicPath string, message []byte) {
 	// Posting the event message
 	e.postMessage(e.mqttAgentTopicPath(e.agentID, topicPath), message)
 }
+
+///// ALL needed??
 
 // Post an event on a given topic path, when there was no error
 func (e *tModellingBusEventsConnector) maybePostEvent(topicPath string, eventMessage []byte, errorMessage string, err error) {
@@ -228,6 +238,17 @@ func (e *tModellingBusEventsConnector) maybePostEvent(topicPath string, eventMes
 
 	// Post the event message
 	e.postEvent(topicPath, eventMessage)
+}
+
+// Post an event on a given topic path, when there was no error
+func (e *tModellingBusEventsConnector) maybePostTargetedEvent(agentID, topicPath string, eventMessage []byte, errorMessage string, err error) {
+	// Handle potential errors
+	if e.reporter.MaybeReportError(errorMessage, err) {
+		return
+	}
+
+	// Post the event message
+	e.postTargetedEvent(agentID, topicPath, eventMessage)
 }
 
 /*

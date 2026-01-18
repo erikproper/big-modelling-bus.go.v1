@@ -285,18 +285,16 @@ func (b *TModellingBusArtefactConnector) PostJSONArtefactConsidering(considering
  */
 
 // Listening for raw artefact state postings
-func (b *TModellingBusArtefactConnector) ListenForRawArtefactStatePostings(agentID, artefactID string, postingHandler func(string)) {
+func (b *TModellingBusArtefactConnector) ListenForRawArtefactStatePostings(agentID, artefactID, fileName string, postingHandler func(string, string)) {
 	// Listen for raw artefact state postings
-	b.ModellingBusConnector.listenForFilePostings(agentID, b.rawArtefactsTopicPath(artefactID), generics.JSONFileName, func(localFilePath, _ string) {
-		postingHandler(localFilePath)
-	})
+	b.ModellingBusConnector.listenForFilePostings(agentID, b.rawArtefactsTopicPath(artefactID), fileName, postingHandler)
 }
 
 // Listening for JSON artefact state postings
 func (b *TModellingBusArtefactConnector) ListenForJSONArtefactStatePostings(agentID, artefactID string, handler func()) {
 	// Listen for JSON artefact state postings
-	b.ModellingBusConnector.listenForJSONFilePostings(agentID, b.jsonArtefactsStateTopicPath(artefactID), func(json []byte, currentTimestamp string) {
-		b.updateCurrentJSONArtefact(json, currentTimestamp)
+	b.ModellingBusConnector.listenForJSONFilePostings(agentID, b.jsonArtefactsStateTopicPath(artefactID), func(json []byte, timestamp string) {
+		b.updateCurrentJSONArtefact(json, timestamp)
 		handler()
 	})
 }

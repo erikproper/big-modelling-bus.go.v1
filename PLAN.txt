@@ -1,8 +1,9 @@
 Commandlines:
-[ ] get
-[ ] wait ==> waits for an update, insteqd of getting the current version, and then exit immediately
-[ ] listen ==> Requires handler gets timestamp as input
-[ ] bus_monitor via in GO instead of mosquitto
+[ ] get ... coordination ... CHECK the topic/agend_ID logic
+
+[ ] wait option for get ==> waits for an update, insteqd of getting the current version, and then exit immediately
+[ ] handler ==> Requires handler gets timestamp as input "handler <timestamp>"
+[ ] monitor via in GO instead of mosquitto
 
 [ ] Code review
 

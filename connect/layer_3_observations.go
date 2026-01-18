@@ -72,7 +72,7 @@ func (b *TModellingBusConnector) PostJSONObservation(observationID string, json 
 
 // Posting a streamed observation to the modelling bus
 func (b *TModellingBusConnector) PostStreamedObservation(observationID string, json []byte) {
-	b.postJSONAsStreamed(b.streamedObservationsTopicPath(observationID), json, generics.GetTimestamp())
+	b.postJSONAsStreamed(b.agentID, b.streamedObservationsTopicPath(observationID), json, generics.GetTimestamp())
 }
 
 /*
